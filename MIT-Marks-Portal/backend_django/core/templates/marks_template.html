@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Upload Marks</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&display=swap" rel="stylesheet">
+
+<style>
+:root{
+    --brand1:#6955f0;
+    --brand2:#a990ff;
+    --bg1:#f3f4ff;
+    --bg2:#ece9ff;
+    --text:#1d1b2e;
+    --muted:#7a7a9a;
+    --shadow:0 12px 40px rgba(88,72,180,0.12);
+}
+
+body {
+    margin: 0;
+    font-family: Inter, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background:
+      linear-gradient(135deg,var(--bg1),var(--bg2)),
+      radial-gradient(circle at top left,rgba(120,90,255,0.10),transparent 60%);
+}
+
+.card {
+    background: #ffffffcc;
+    padding: 35px;
+    width: 95%;
+    max-width: 480px;
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+    text-align: center;
+}
+
+h2 {
+    font-size: 1.6rem;
+    font-weight: 900;
+    background: linear-gradient(90deg,var(--brand1),var(--brand2));
+    -webkit-background-clip: text;
+    color: transparent;
+    margin-bottom: 10px;
+}
+
+p {
+    color: var(--muted);
+    font-size: .95rem;
+    margin-bottom: 25px;
+}
+
+input[type="file"] {
+    width: 100%;
+    padding: 12px;
+    background: #fafaff;
+    border-radius: 12px;
+    border: 1.5px solid #d8d5f4;
+    font-size: 0.95rem;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 18px;
+    background: linear-gradient(90deg,var(--brand1),var(--brand2));
+    border: none;
+    border-radius: 14px;
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+    font-size: 1.05rem;
+    box-shadow: 0 6px 20px rgba(120,90,255,0.20);
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+#msg {
+    margin-top: 18px;
+    font-weight: 700;
+    font-size: 1rem;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h2>Upload Filled Marks</h2>
+    <p>Select the Excel file that you downloaded & filled with marks.</p>
+
+    <input type="file" id="file" accept=".xlsx" />
+
+    <button onclick="uploadFile()">Upload Marks</button>
+
+    <p id="msg"></p>
+</div>
+
+<script>
+function uploadFile(){
+    let f = document.getElementById("file").files[0];
+    if(!f){ 
+        document.getElementById("msg").style.color = "red";
+        document.getElementById("msg").innerText = "Please select a file!";
+        return;
+    }
+
+    let form = new FormData();
+    form.append("file", f);
+    form.append("branch", localStorage.getItem("branch"));
+    form.append("semester", localStorage.getItem("semester"));
+    form.append("section", localStorage.getItem("section"));
+
+    fetch("/api/upload_marks/", {
+        method: "POST",
+        body: form
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.status === "saved"){
+            document.getElementById("msg").style.color = "green";
+            document.getElementById("msg").innerText = "Marks Uploaded Successfully ✔";
+        } else {
+            document.getElementById("msg").style.color = "red";
+            document.getElementById("msg").innerText = "Upload failed. Try again.";
+        }
+    });
+}
+</script>
+
+</body>
+</html>

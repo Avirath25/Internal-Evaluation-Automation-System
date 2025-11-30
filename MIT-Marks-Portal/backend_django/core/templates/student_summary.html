@@ -1,0 +1,444 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Internal Assessment Summary Sheet</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 15px;
+    line-height: 1.2;
+    color: #005b8e;
+    font-size: 13px;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+
+  .logo {
+    width: 80px;
+    height: 80px;
+    margin-right: 15px;
+    background: transparent;
+    border-radius: 50%;
+    object-fit: contain;
+  }
+
+  .title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 24px;
+    color: #0097d7;
+  }
+
+  .scheme {
+    font-weight: bold;
+    margin: 20px 0;
+    color: #0097d7;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    color: #0097d7;
+  }
+
+  th, td {
+    border: 1px solid #0097d7;
+    padding: 10px 15px;
+    font-size: 16px;
+    height: 35px;
+  }
+
+  .student-info td {
+    font-size: 16px;
+    font-weight: 600;
+    padding: 10px 15px;
+  }
+
+  .section-title {
+    font-weight: bold;
+    margin-top: 25px;
+    margin-bottom: 12px;
+    color: #0097d7;
+    font-size: 14px;
+  }
+
+  .controls {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .btn {
+    background: #0097d7;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    margin: 0 5px;
+  }
+
+  .btn:hover {
+    background: #007bb5;
+  }
+
+  .signature-table {
+    margin-top: 40px;
+    width: 100%;
+  }
+
+  .signature-table td {
+    border: 0;
+    padding: 10px;
+    vertical-align: bottom;
+  }
+
+  .hod-signature {
+    text-align: right;
+    position: relative;
+  }
+
+  .note {
+    font-size: 11px;
+    color: #666;
+    margin: 10px 0;
+    font-style: italic;
+  }
+
+  .page-break {
+    page-break-before: always;
+  }
+
+  .second-page {
+    margin-top: 40px;
+    color: #0097d7;
+  }
+
+  @media print {
+    .controls { display: none; }
+    .page-break { page-break-before: always; }
+    .second-page { margin-top: 0; }
+    body { margin: 15px; padding: 10px; font-size: 12px; }
+    .title { font-size: 18px; margin-bottom: 8px; }
+    .scheme { margin-bottom: 10px; }
+    th, td { padding: 3px 5px; font-size: 11px; }
+    .section-title { margin-top: 12px; margin-bottom: 6px; font-size: 13px; }
+    .signature-table { margin-top: 15px; }
+    .logo { width: 50px; height: 50px; }
+    @page { margin: 0; }
+    * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="controls">
+  <button class="btn" id="printBtn">Print Summary</button>
+  <button class="btn" id="refreshBtn">Refresh Data</button>
+</div>
+
+<div class="header">
+  <img src="{% static 'images/mitlogo1.jpeg' %}" alt="MIT Logo" class="logo">
+  <div class="title">MAHARAJA INSTITUTE OF TECHNOLOGY MYSORE<br>INTERNAL ASSESSMENT SUMMARY SHEET</div>
+</div>
+
+<p class="scheme" style="text-align: center;"><b>23 - Scheme</b></p>
+
+<table class="student-info">
+<tr><td>Student Name</td><td id="stu_name_text"></td><td>Semester</td><td id="stu_sem"></td></tr>
+<tr><td>USN</td><td id="stu_usn"></td><td>Section</td><td id="stu_sec"></td></tr>
+<tr><td>Subject</td><td id="subject_name"></td><td>Sub Code</td><td id="subject_code"></td></tr>
+<tr><td>Name of the Faculty</td><td colspan="3" id="faculty_name"></td></tr>
+</table>
+
+<!-- 4-credit section -->
+<section id="fourCreditSection">
+<p class="section-title">4 Credits Courses</p>
+<table>
+<tr>
+  <th>Test‑1 (40)</th>
+  <th>Test‑2 (40)</th>
+  <th>Make‑up (40)</th>
+  <th>Best of Two CIE (15)</th>
+  <th>Asg‑1 (25)</th>
+  <th>Asg‑2 (25)</th>
+  <th>Avg Assg (10)</th>
+  <th>Total T+A (25)</th>
+  <th>Lab CIE (15)</th>
+  <th>Lab Test (10)</th>
+  <th>Practical Total (25)</th>
+  <th>Final CIE (50)</th>
+</tr>
+<tr>
+  <td id="t1_4"></td><td id="t2_4"></td><td id="mu_4"></td><td id="besttwo_4"></td>
+  <td id="asg1_4"></td><td id="asg2_4"></td><td id="avgasg_4"></td><td id="tot_ta_4"></td>
+  <td id="labcie_4"></td><td id="labtest_4"></td><td id="pr_total_4"></td><td id="final_4"></td>
+</tr>
+</table>
+</section>
+
+<!-- 3/2/1-credit section -->
+<section id="smallCreditSection" style="display:none;">
+<p class="section-title">3, 2, & 1 Credit Courses</p>
+<table>
+<tr>
+  <th>Test‑1 (40)</th>
+  <th>Test‑2 (40)</th>
+  <th>Make‑up (40)</th>
+  <th>Best of Two CIE (25)</th>
+  <th>Asg‑1 (25)</th>
+  <th>Asg‑2 (25)</th>
+  <th>Total Assg (25)</th>
+  <th>Final CIE (50)</th>
+</tr>
+<tr>
+  <td id="t1_s"></td><td id="t2_s"></td><td id="mu_s"></td><td id="besttwo_s"></td>
+  <td id="asg1_s"></td><td id="asg2_s"></td><td id="tot_asg_s"></td><td id="final_s"></td>
+</tr>
+</table>
+</section>
+
+<p class="section-title">TOTAL CIE MARKS SECURED</p>
+<table>
+<tr><td style="height: 40px; font-weight: 900; font-size: 22px; text-align: center;" id="total_cie"></td></tr>
+</table>
+
+<p class="section-title">MARKS IN WORDS</p>
+<table>
+<tr><td style="height: 40px; font-weight: 700; text-align: center;" id="marks_words"></td></tr>
+</table>
+
+<div style="margin: 60px 0;"></div>
+
+<table class="signature-table">
+<tr>
+  <td style="text-align:left; width: 70%;">SIGNATURE OF STAFF</td>
+  <td class="hod-signature" style="width: 30%;">SIGNATURE OF HOD</td>
+</tr>
+</table>
+
+<!-- Page Break for Second Page -->
+<div class="page-break"></div>
+
+<!-- Second Page: Rules and Regulations -->
+<div class="second-page">
+  <h2 style="text-align: center; font-weight: bold; color: #0097d7; margin-bottom: 30px;">RULES AND REGULATIONS AND CODE OF CONDUCT</h2>
+
+  <ol style="padding-left: 20px; line-height: 1.6; font-size: 15px;">
+    <li style="margin-bottom: 15px; color: #0097d7;">
+      Candidates shall take possession of their seats 10 minutes before the commencement 
+      of the scheduled CIA conduction time and shall be permitted to leave the hall only 
+      after 75% of the scheduled duration of the CIA.
+    </li>
+
+    <li style="margin-bottom: 15px; color: #0097d7;">
+      Candidates must be in possession of all permitted accessories such as black pen, pencil, 
+      eraser, scale, compass, protractor, calculator, etc. and must not be in possession of 
+      illegal artifacts such as mobile phones. Portions of the study material, manuscript, 
+      programmable calculator or matter, which is not permissible to be brought into the 
+      examination hall.
+    </li>
+
+    <li style="margin-bottom: 15px; color: #0097d7;">
+      Candidates shall not have any written matter on scribbling pad, question paper, calculator 
+      or any part of the body, kerchief, clothes, socks, instrument box, identity card, 
+      scales, etc.
+    </li>
+
+    <li style="margin-bottom: 15px; color: #0097d7;">
+      Candidates shall not communicate with any candidate with other candidates during CIA 
+      conduction.
+    </li>
+
+    <li style="margin-bottom: 15px; color: #0097d7;">
+      Candidates shall sign in the attendance sheet provided.
+    </li>
+
+    <li style="margin-bottom: 15px; color: #0097d7;">
+      Candidates shall behave appropriately in all circumstances and in case of any grievance; 
+      the same shall be brought to the notice of IA coordinator or HOD of the concerned 
+      department.
+    </li>
+  </ol>
+
+  <h3 style="text-align: center; font-weight: bold; color: #0097d7; margin: 40px 0 30px 0;">DECLARATION BY THE CANDIDATE</h3>
+
+  <div style="margin-top: 30px; line-height: 1.8; color: #0097d7; font-size: 15px;">
+    I, Mr/Miss <span style="text-decoration: underline; font-weight: bold; font-size: 17px;" id="declaration_name"></span> bearing USN <span style="text-decoration: underline; font-weight: bold; font-size: 17px;" id="declaration_usn"></span> Will abide by the rules and regulations of the institute, as well by the defined code of conduct and maintain the decorum of the institution. I shall bear the consequences of discrepancy, if found by the authority of the institution.
+  </div>
+
+  <div style="text-align: right; margin-top: 80px; font-weight: bold; color: #006f9e; font-size: 17px;">
+    Signature of the Candidate
+  </div>
+</div>
+
+<script>
+/*
+  student_summary.html JS
+  - expects GET /api/get_student_summary/?usn=XXXX  (you already have get_student_summary)
+  - stores/display values; toggles 4-credit vs 3/2/1 layout depending on wether lab fields present
+  - uses localStorage.student_usn (set earlier in login)
+*/
+
+function toWords(n){
+  // simple English words for 0..99
+  const a = ["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven",
+    "twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"];
+  const b = ["", "", "twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
+  if (n < 20) return a[n];
+  if (n < 100) {
+    const tens = Math.floor(n/10);
+    const rem = n%10;
+    return b[tens] + (rem? " " + a[rem] : "");
+  }
+  return String(n);
+}
+
+function fillSummary(data){
+  // basic student info
+  const studentName = data.summary.name || "";
+  const studentUSN = data.summary.usn || "";
+  
+  document.getElementById("stu_name_text").innerText = studentName;
+  document.getElementById("stu_usn").innerText = studentUSN;
+  document.getElementById("stu_sem").innerText = data.summary.semester || "";
+  document.getElementById("stu_sec").innerText = data.summary.section || "";
+
+  // Fill second page declaration
+  document.getElementById("declaration_name").innerText = studentName;
+  document.getElementById("declaration_usn").innerText = studentUSN;
+
+  // subject/faculty placeholders (if you want teacher to send this, add to API)
+  document.getElementById("subject_name").innerText = data.summary.subject || ""; // optional
+  document.getElementById("subject_code").innerText = data.summary.sub_code || "";
+  document.getElementById("faculty_name").innerText = data.summary.faculty || "";
+
+  // marks
+  const m = data.summary;
+  // Use credits to determine which section to show
+  const is4Credit = (m.credits === 4);
+
+  if(is4Credit){
+    document.getElementById("fourCreditSection").style.display = 'block';
+    document.getElementById("smallCreditSection").style.display = 'none';
+
+    document.getElementById("t1_4").innerText = (m.ia1 !== null && m.ia1 !== undefined) ? m.ia1 : '';
+    document.getElementById("t2_4").innerText = (m.ia2 !== null && m.ia2 !== undefined) ? m.ia2 : '';
+    document.getElementById("mu_4").innerText = (m.ia3 !== null && m.ia3 !== undefined) ? m.ia3 : '';
+
+    // compute best of two IA scaled to 15 (if API hasn't already)
+    const internals = [m.ia1, m.ia2, m.ia3].filter(v => v !== null && v !== undefined);
+    let besttwo = '';
+    if(internals.length >= 2){
+      internals.sort((a,b)=>b-a);
+      const sum = internals[0] + internals[1];
+      // scale from 40 to 15 each IA pair -> average then scale (common method: average of best2 /40 *15)
+      besttwo = Math.round((sum/2)/40 * 15 * 100)/100;
+    }
+    document.getElementById("besttwo_4").innerText = besttwo;
+
+    document.getElementById("asg1_4").innerText = m.asg1 ?? '';
+    document.getElementById("asg2_4").innerText = m.asg2 ?? '';
+    // For 4-credit: assignments scaled to 10 marks total
+    const avgAsg4 = ((m.asg1||0) + (m.asg2||0)) / 2;
+    const scaledAsg4 = Math.round((avgAsg4/25) * 10 * 100)/100;
+    document.getElementById("avgasg_4").innerText = scaledAsg4;
+
+    // total T+A = besttwo(15) + scaledAsg(10) = 25
+    const totsTA = (Number(besttwo||0) + Number(scaledAsg4||0));
+    document.getElementById("tot_ta_4").innerText = Math.round(totsTA*100)/100;
+
+    document.getElementById("labcie_4").innerText = m.lab_cie ?? '';
+    document.getElementById("labtest_4").innerText = m.lab_test ?? '';
+    const prTotal = (Number(m.lab_cie||0) + Number(m.lab_test||0));
+    document.getElementById("pr_total_4").innerText = prTotal ? prTotal : '';
+
+    const final = Math.round(Number(totsTA) + Number(prTotal));
+    document.getElementById("final_4").innerText = final || '';
+
+    document.getElementById("total_cie").innerText = final || '';
+    const words = toWords(final || 0);
+    document.getElementById("marks_words").innerText = words ? words.charAt(0).toUpperCase() + words.slice(1) + ' only' : '';
+  } else {
+    // small credit flow
+    document.getElementById("fourCreditSection").style.display = 'none';
+    document.getElementById("smallCreditSection").style.display = 'block';
+
+    document.getElementById("t1_s").innerText = (m.ia1 !== null && m.ia1 !== undefined) ? m.ia1 : '';
+    document.getElementById("t2_s").innerText = (m.ia2 !== null && m.ia2 !== undefined) ? m.ia2 : '';
+    document.getElementById("mu_s").innerText = (m.ia3 !== null && m.ia3 !== undefined) ? m.ia3 : '';
+
+    const internals = [m.ia1, m.ia2, m.ia3].filter(v => v !== null && v !== undefined);
+    let besttwo_s = '';
+    if(internals.length >= 2){
+      internals.sort((a,b)=>b-a);
+      // scale average of best2 from 40 -> 25
+      const avg40 = (internals[0] + internals[1]) / 2;
+      besttwo_s = Math.round((avg40/40)*25 *100)/100;
+    }
+    document.getElementById("besttwo_s").innerText = besttwo_s;
+    document.getElementById("asg1_s").innerText = m.asg1 ?? '';
+    document.getElementById("asg2_s").innerText = m.asg2 ?? '';
+    // For 3/2/1-credit: assignments scaled from 50 to 25
+    const asgSum = (Number(m.asg1||0) + Number(m.asg2||0));
+    const scaledAsgS = Math.round((asgSum / 50) * 25 * 100) / 100;
+    document.getElementById("tot_asg_s").innerText = scaledAsgS || '';
+
+    const finalS = Math.ceil(Number(besttwo_s||0) + Number(scaledAsgS||0));
+    document.getElementById("final_s").innerText = finalS || '';
+
+    document.getElementById("total_cie").innerText = finalS || '';
+    const words = toWords(finalS || 0);
+    document.getElementById("marks_words").innerText = words ? words.charAt(0).toUpperCase() + words.slice(1) + ' only' : '';
+  }
+}
+
+async function loadSummary(){
+  const usn = localStorage.getItem("student_usn") || new URLSearchParams(window.location.search).get("usn");
+  if(!usn){
+    alert("No student USN found — please login first.");
+    return;
+  }
+
+  try {
+    const subid = new URLSearchParams(window.location.search).get("subject_id");
+    const res = await fetch(`/api/student/summary/?usn=${encodeURIComponent(usn)}&subject_id=${subid}`);
+
+    if(!res.ok){
+      const txt = await res.text();
+      throw new Error("Server: " + res.status + " " + txt);
+    }
+    const data = await res.json();
+    if(data.status !== "success"){
+      alert("Error fetching summary: " + (data.error || data.message || JSON.stringify(data)));
+      return;
+    }
+    fillSummary(data);
+  } catch(err){
+    alert("Failed to load summary: " + err.message);
+  }
+}
+
+document.getElementById("printBtn").addEventListener("click", function() {
+  window.print();
+});
+document.getElementById("refreshBtn").addEventListener("click", ()=> loadSummary());
+
+// auto load
+if (typeof console !== 'undefined' && console.clear) {
+  console.clear();
+}
+loadSummary();
+</script>
+</body>
+</html>

@@ -1,0 +1,266 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Select Course & Credits</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&display=swap" rel="stylesheet">
+
+<style>
+:root{
+    --brand1:#6955f0;
+    --brand2:#a990ff;
+    --bg1:#f3f4ff;
+    --bg2:#ece9ff;
+    --text:#1d1b2e;
+    --light:#7b7a88;
+    --shadow:0 12px 40px rgba(88,72,180,0.12);
+}
+
+/* Background */
+body{
+    margin:0;
+    font-family:"Inter",sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:70px 15px;
+    background:
+      linear-gradient(135deg,var(--bg1),var(--bg2)),
+      radial-gradient(circle at top left,rgba(120,90,255,0.10),transparent 60%);
+}
+
+/* Card Box */
+.card{
+    width:100%;
+    max-width:460px;
+    background:#ffffffcc;
+    padding:32px 30px;
+    border-radius:22px;
+    box-shadow:var(--shadow);
+    backdrop-filter:blur(12px);
+}
+
+/* Title */
+.title{
+    text-align:center;
+    font-size:1.6rem;
+    font-weight:900;
+    background:linear-gradient(90deg,var(--brand1),var(--brand2));
+    -webkit-background-clip:text;
+    color:transparent;
+    margin-bottom:6px;
+}
+
+.subtext{
+    text-align:center;
+    color:var(--light);
+    margin-bottom:22px;
+    font-size:.95rem;
+}
+
+/* Labels */
+label{
+    font-weight:700;
+    font-size:0.92rem;
+    margin-bottom:6px;
+    color:var(--light);
+    display:block;
+}
+
+.search-box{
+    position:relative;
+    margin-bottom:22px;
+}
+
+.search-input{
+    width:100%;
+    padding:12px 40px 12px 14px;
+    border-radius:12px;
+    border:1.5px solid #d8d5f4;
+    background:#fafaff;
+    font-size:0.95rem;
+    outline:none;
+}
+.search-input:focus{
+    border-color:var(--brand1);
+    box-shadow:0 0 0 4px #7166ee33;
+}
+
+/* Arrow */
+.arrow{
+    position:absolute;
+    right:16px;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:14px;
+    color:#7a77a1;
+    pointer-events:none;
+}
+
+/* Dropdown list */
+.options{
+    position:absolute;
+    width:100%;
+    background:white;
+    border-radius:12px;
+    border:1px solid #e1e0f4;
+    box-shadow:0 10px 30px rgba(0,0,0,0.15);
+    display:none;
+    max-height:170px;
+    overflow-y:auto;
+    z-index:20;
+    margin-top:2px;
+}
+
+.option{
+    padding:10px 14px;
+    cursor:pointer;
+    font-size:0.95rem;
+}
+.option:hover{
+    background:#f4f1ff;
+}
+
+/* Button */
+button{
+    width:100%;
+    padding:14px;
+    border-radius:14px;
+    font-size:1.05rem;
+    font-weight:800;
+    border:none;
+    cursor:pointer;
+    background:linear-gradient(90deg,var(--brand1),var(--brand2));
+    color:white;
+    box-shadow:0 6px 20px rgba(120,90,255,0.20);
+}
+button:hover{
+    transform:translateY(-2px);
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <div class="title">Select Course</div>
+    <div class="subtext" id="classInfo"></div>
+
+    <!-- Course -->
+    <label>Course Name</label>
+    <div class="search-box">
+        <input class="search-input" id="courseInput" placeholder="Type or select course">
+        <span class="arrow">▼</span>
+        <div class="options" id="courseOptions"></div>
+    </div>
+
+    <!-- Credits -->
+    <label>Credits</label>
+    <div class="search-box">
+        <input class="search-input" id="creditInput" placeholder="Select credits">
+        <span class="arrow">▼</span>
+        <div class="options" id="creditOptions"></div>
+    </div>
+
+    <button onclick="continueNext()">Continue</button>
+
+</div>
+
+<script>
+/* Display selected class */
+let b = localStorage.getItem("branch");
+let s = localStorage.getItem("semester");
+let c = localStorage.getItem("section");
+
+document.getElementById("classInfo").innerText = `${b} - Sem ${s} - Sec ${c}`;
+
+/* Course options */
+const courses = [
+    "Microcontrollers",
+    "DSA",
+    "DBMS",
+    "Web Technology",
+    "Machine Learning",
+    "Operating Systems",
+    "Computer Networks",
+    "Python Programming",
+    "Java Programming",
+    "Cloud Computing"
+];
+
+/* Credits */
+const credits = ["1", "2", "3", "4"];
+
+/* Dropdown setup */
+function setupSelect(inputId, listId, data){
+    const input = document.getElementById(inputId);
+    const list = document.getElementById(listId);
+
+    input.addEventListener("focus", ()=>{
+        list.style.display="block";
+        show(data);
+    });
+
+    input.addEventListener("input", ()=>{
+        const val = input.value.toLowerCase();
+        show(data.filter(x=>x.toLowerCase().includes(val)));
+    });
+
+    function show(arr){
+        list.innerHTML="";
+        arr.forEach(item=>{
+            let div=document.createElement("div");
+            div.className="option";
+            div.innerText=item;
+            div.onclick=()=>{
+                input.value=item;
+                list.style.display="none";
+            };
+            list.appendChild(div);
+        });
+    }
+
+    document.addEventListener("click",(e)=>{
+        if(!input.contains(e.target) && !list.contains(e.target)){
+            list.style.display="none";
+        }
+    });
+}
+
+setupSelect("courseInput","courseOptions",courses);
+setupSelect("creditInput","creditOptions",credits);
+
+
+/* Continue button */
+
+function continueNext() {
+    let credits = document.getElementById("creditInput").value;
+    let course = document.getElementById("courseInput").value;
+
+    let branch = localStorage.getItem("branch");
+    let semester = localStorage.getItem("semester");
+    let section = localStorage.getItem("section");
+
+    if (!course || !credits) {
+        alert("Please select a course and credits");
+        return;
+    }
+
+    // open download in new tab (so browser won't block navigation)
+    const url = `/api/download_template/?branch=${encodeURIComponent(branch)}&semester=${encodeURIComponent(semester)}&section=${encodeURIComponent(section)}&credits=${encodeURIComponent(credits)}`;
+    window.open(url, "_blank");
+
+    // then navigate to upload marks page
+    // (give a short delay so download request starts — 400ms)
+    setTimeout(()=> {
+        window.location.href = "/teacher/marks/";
+    }, 400);
+}
+</script>
+
+
+</body>
+</html>

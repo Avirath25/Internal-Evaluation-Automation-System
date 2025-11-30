@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Bulk Upload Students — MIT MYSORE</title>
+
+<link rel="stylesheet" href="css/styles.css" />
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="brand">MIT MYSORE · BULK UPLOAD</div>
+  <button class="logout" onclick="location.href='teacher.html'">Back</button>
+</div>
+
+<!-- MAIN WRAPPER -->
+<div style="max-width:900px;margin:30px auto;padding:25px;background:#fff;border-radius:12px;">
+
+  <h2>Bulk Upload Students</h2>
+  <p>Select Class → Upload Excel → Fix → Upload to Database</p>
+
+  <!-- CLASS SELECT -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:15px;">
+  
+    <div>
+      <label>Semester</label>
+      <select id="semSelect"><option value="">Select</option></select>
+    </div>
+
+    <div>
+      <label>Branch</label>
+      <select id="branchSelect"><option value="">Select</option></select>
+    </div>
+
+    <div>
+      <label>Section</label>
+      <select id="sectionSelect"><option value="">Select</option></select>
+    </div>
+
+  </div>
+
+  <p style="margin-top:12px;">
+    <strong>Excel Format Required:</strong> Only 2 columns — <code>USN</code> and <code>Name</code><br>
+    <a href="#" id="downloadFormat">📄 Download Sample Format</a>
+  </p>
+
+  <!-- FILE INPUT -->
+  <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="margin-top:10px;width:100%;"/>
+
+  <div style="margin-top:12px;">
+    <button id="parseBtn" class="btn btn-primary">Parse & Preview</button>
+    <button id="uploadBtn" class="btn btn-primary" disabled>Upload to Database</button>
+    <button id="clearBtn" class="btn btn-light">Clear</button>
+  </div>
+
+  <!-- PREVIEW TABLE -->
+  <div id="previewWrap" style="margin-top:18px; display:none;">
+    <h3>Preview</h3>
+
+    <div style="max-height:350px;overflow:auto;border:1px solid #ddd;padding:8px;">
+      <table id="previewTable" style="width:100%;border-collapse:collapse;"></table>
+    </div>
+
+    <p id="previewInfo" style="font-weight:700;margin-top:12px;"></p>
+  </div>
+
+  <div id="result" style="margin-top:15px;font-weight:700;"></div>
+
+</div>
+
+<!-- SCRIPT -->
+<script>
+
+/* Helper */
+const el = id => document.getElementById(id);
+
+/* Load Semesters */
+async function loadSemesters() {
+  const res = await fetch("/api/semesters");
+  const list = await res.json();
+  semSelect.innerHTML = "<option value=''>Select</option>";
+  list.forEach(s => semSelect.innerHTML += `<option>${s.number}</option>`);
+}
+
+/* Load Branches */
+async function loadBranches() {
+  const res = await fetch("/api/branches");
+  const list = await res.json();
+  branchSelect.innerHTML = "<option value=''>Select</option>";
+  list.forEach(b => branchSelect.innerHTML += `<option>${b.name}</option>`);
+}
+
+/* Load Sections */
+async function loadSections() {
+  sectionSelect.innerHTML = "<option value=''>Select</option>";
+  if (!semSelect.value || !branchSelect.value) return;
+
+  const res = await fetch(`/api/sections?sem=${semSelect.value}&branch=${branchSelect.value}`);
+  const list = await res.json();
+
+  list.forEach(s => sectionSelect.innerHTML += `<option>${s.name}</option>`);
+}
+
+/* Auto-fix USN */
+function autoFixUSN(usn) {
+  if (!usn) return "";
+  let s = usn.toString().toUpperCase().trim();
+  s = s.replace(/[\s\-\.]/g, "");   // remove spaces
+  s = s.replace(/[^A-Z0-9]/g, "");  // remove symbols
+  s = s.replace(/O/g, "0");         // letter O → zero
+  s = s.replace(/I/g, "1");         // letter I → one
+
+  // pad last 3 digits
+  let m = s.match(/(\d{1,3})$/);
+  if (m) s = s.replace(/(\d{1,3})$/, m[1].padStart(3, "0"));
+
+  return s;
+}
+
+let parsed = [];
+let existingUSNs = new Set();
+
+/* Load existing USNs */
+async function loadExisting() {
+  if (!semSelect.value || !branchSelect.value || !sectionSelect.value) return new Set();
+  const res = await fetch(`/api/students?sem=${semSelect.value}&branch=${branchSelect.value}&section=${sectionSelect.value}`);
+  const arr = await res.json();
+  return new Set(arr.map(x => x.usn.toUpperCase()));
+}
+
+/* Detect column names */
+function detectColumns(row) {
+  const keys = Object.keys(row);
+  const USNcol = keys.find(k => k.toUpperCase().includes("USN")) || keys[0];
+  const NAMEcol = keys.find(k => k.toUpperCase().includes("NAME")) || keys[1];
+  return { USNcol, NAMEcol };
+}
+
+/* PARSE FILE */
+parseBtn.onclick = async () => {
+
+  if (!semSelect.value || !branchSelect.value || !sectionSelect.value)
+    return alert("Select class first!");
+
+  const file = fileInput.files[0];
+  if (!file) return alert("Choose Excel file first!");
+
+  existingUSNs = await loadExisting();
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const wb = XLSX.read(new Uint8Array(e.target.result), { type: "array" });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const json = XLSX.utils.sheet_to_json(ws, { defval:"" });
+
+    if (!json.length) return alert("Empty file!");
+
+    const { USNcol, NAMEcol } = detectColumns(json[0]);
+
+    parsed = [];
+    let dupFile = new Set();
+
+    json.forEach((row, i) => {
+      let USN = autoFixUSN(row[USNcol]);
+      let Name = (row[NAMEcol] || "").trim();
+      let status = "OK";
+      let color = "";
+
+      if (!USN || !Name) {
+        status = "Missing Fields"; color = "background:#ffdddd";
+      } else if (dupFile.has(USN)) {
+        status = "Duplicate In File"; color = "background:#fff4c2";
+      } else if (existingUSNs.has(USN)) {
+        status = "Already Exists"; color = "background:#ffe9c4";
+      }
+
+      dupFile.add(USN);
+
+      parsed.push({ USN, Name, status, color });
+    });
+
+    renderPreview();
+  };
+
+  reader.readAsArrayBuffer(file);
+};
+
+/* Render table */
+function renderPreview() {
+  previewWrap.style.display = "block";
+  previewTable.innerHTML = `
+    <thead>
+      <tr><th>USN</th><th>Name</th><th>Status</th></tr>
+    </thead><tbody>
+      ${parsed.map(r => `
+        <tr style="${r.color}">
+          <td>${r.USN}</td>
+          <td>${r.Name}</td>
+          <td>${r.status}</td>
+        </tr>`).join("")}
+    </tbody>
+  `;
+
+  uploadBtn.disabled = parsed.some(r => r.status === "Missing Fields");
+  previewInfo.textContent = `Rows: ${parsed.length}`;
+}
+
+/* Upload students */
+uploadBtn.onclick = async () => {
+  if (!confirm("Upload valid students to database?")) return;
+
+  const rows = parsed
+    .filter(r => r.status === "OK")
+    .map(r => ({ usn: r.USN, name: r.Name }));
+
+  const res = await fetch("/api/students/bulk", {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify({
+      sem: semSelect.value,
+      branch: branchSelect.value,
+      section: sectionSelect.value,
+      rows
+    })
+  });
+
+  const data = await res.json();
+  result.textContent = `Added: ${data.added}, Updated: ${data.updated}, Skipped: ${data.skipped}`;
+};
+
+/* Clear */
+clearBtn.onclick = () => {
+  fileInput.value = "";
+  previewWrap.style.display = "none";
+  parsed = [];
+  result.textContent = "";
+};
+
+/* Sample Excel format */
+downloadFormat.onclick = () => {
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([
+    ["USN", "Name"],
+    ["4MH23CS001", "Student 1"],
+    ["4MH23CS002", "Student 2"]
+  ]);
+  XLSX.utils.book_append_sheet(wb, ws, "Sample");
+  XLSX.writeFile(wb, "Sample_Student_Format.xlsx");
+};
+
+/* INIT */
+loadSemesters();
+loadBranches();
+semSelect.onchange = loadSections;
+branchSelect.onchange = loadSections;
+
+</script>
+
+</body>
+</html>

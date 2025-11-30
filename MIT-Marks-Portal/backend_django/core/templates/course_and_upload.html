@@ -1,0 +1,337 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Course select & Upload marks</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --brand1:#6955f0; --brand2:#a990ff; --muted:#6b6499; --light:#7b7a88; }
+  body{ font-family:Inter, sans-serif; margin:0; min-height:100vh; display:flex; align-items:flex-start; justify-content:center; background:linear-gradient(180deg,#f6f7ff,#eef2ff); padding:28px;}
+  .card{ width:100%; max-width:920px; background:#fff; border-radius:12px; padding:20px; box-shadow:0 18px 50px rgba(90,70,200,0.06); }
+  h1{ color:var(--brand1); margin:0 0 14px 0; }
+  .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; align-items:start; }
+  label{ font-weight:700; color:var(--muted); display:block; margin-bottom:6px; }
+  select,input[type="text"],input[type="file"],input[type="number"]{ padding:10px 12px; border-radius:10px; border:1px solid #e7e5fb; background:#fbfbff; width:100%; font-weight:600; }
+  .row-full{ grid-column: 1 / -1; display:flex; gap:12px; align-items:center; }
+  .btn{ background:linear-gradient(90deg,var(--brand1),var(--brand2)); color:white; border:none; padding:10px 14px; border-radius:10px; font-weight:800; cursor:pointer; }
+  .btn.secondary{ background:#f1f0ff; color:#3f3b7b; border:1px solid #e7e5fb; }
+  .small{ font-size:12px; color:#666; }
+  .hint{ color:#555; font-size:13px; margin-top:6px; }
+  .inline{ display:flex; gap:8px; align-items:center; }
+  .msg{ margin-top:8px; font-weight:700; display:none; }
+  .msg.success{ color:green; }
+  .msg.error{ color:#c23a3a; display:none; }
+  .subject-list{ max-height:220px; overflow:auto; border:1px solid #eee; border-radius:8px; padding:8px; }
+  .subject-item{ padding:8px; border-bottom:1px dashed #f0efff; display:flex; justify-content:space-between; align-items:center; }
+  .subject-item:last-child{ border-bottom:none; }
+  .muted{ color:#888; font-size:12px; }
+  .logout-btn{ position:absolute; top:20px; right:20px; background:linear-gradient(90deg,var(--brand1),var(--brand2)); color:white; border:none; padding:8px 16px; border-radius:8px; font-size:0.9rem; font-weight:700; cursor:pointer; transition:all 0.3s ease; }
+  .logout-btn:hover{ transform:translateY(-2px); box-shadow:0 4px 12px rgba(105,85,240,0.3); }
+  @media (max-width:840px){ .grid{ grid-template-columns:1fr; } .row-full{ flex-direction:column; align-items:stretch; } }
+</style>
+</head>
+<body>
+  <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+  <div class="card">
+    <h1>Course selection & Upload marks (Teacher)</h1>
+
+    <div style="margin-bottom:12px" class="hint">Class: <span id="classInfo" class="muted"></span></div>
+
+    <div class="grid">
+      <!-- left column: subject selection and add -->
+      <div>
+        <label>Select subject</label>
+        <select id="subjectSelect"><option value="">-- loading subjects --</option></select>
+
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button class="btn secondary" id="openAdd">+ Add Subject</button>
+          <button class="btn secondary" id="refreshBtn">Refresh</button>
+          <button class="btn secondary" id="downloadTemplateBtn">Download Template</button>
+        </div>
+
+        <div class="hint" style="margin-top:8px">If subject exists it will auto-fill credits. You can change credits/teacher before upload.</div>
+
+        <div style="margin-top:14px">
+          <label>Saved subjects for this class</label>
+          <div class="subject-list" id="subjectList"></div>
+        </div>
+      </div>
+
+      <!-- right column: teacher, credits, file -->
+      <div>
+        <label>Teacher name</label>
+        <input type="text" id="teacherName" placeholder="Prof. Name">
+
+        <div style="display:flex; gap:12px; margin-top:10px;">
+          <div style="flex:1">
+            <label>Credits</label>
+            <input type="number" id="creditsInput" min="1" max="6" />
+          </div>
+          <div style="flex:1">
+            <label>Choose .xlsx file</label>
+            <input type="file" id="marksFile" accept=".xlsx" />
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <button class="btn" id="uploadBtn">Upload marks</button>
+          <button class="btn secondary" id="previewBtn">Preview file (client)</button>
+        </div>
+
+        <div class="msg success" id="successMsg"></div>
+        <div class="msg error" id="errMsg"></div>
+      </div>
+
+      <!-- add subject modal area (row full) -->
+      <div class="row-full" style="margin-top:6px;">
+        <div style="flex:1; border:1px dashed #f0efff; padding:12px; border-radius:10px;">
+          <label style="font-size:14px">Quick add subject (save to DB)</label>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <input type="text" id="newSubName" placeholder="Subject name" />
+            <input type="text" id="newSubCode" placeholder="Sub code" style="width:160px" />
+            <input type="number" id="newCredits" placeholder="Credits" style="width:90px" min="1" max="6" />
+            <button class="btn" id="createSubjectBtn">Create</button>
+          </div>
+          <div class="hint">Teacher & credits can still be adjusted before uploading marks.</div>
+        </div>
+
+        <div style="width:240px;">
+          <label>How CIE conversion works</label>
+          <div class="muted" style="margin-top:6px; font-size:13px">
+            • 3/2/1 credits: IA out of 40, assignments 25 each -> convert to 25 + assignments -> final CIE out of 50 (as your calculators).<br>
+            • 4 credits: IA out of 40, assignments 20 each, lab cie(15)+lab test(10) -> final out of 50.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/*
+This page expects these backend endpoints (as in your project):
+ - GET  /api/list_subjects/?branch=...&semester=...&section=...
+    -> { subjects: [{id, subject, subcode, credits, faculty}, ...] }
+
+ - POST /api/create_subject/  (JSON)
+    -> { status:"success", subject_id: <id> }
+
+ - GET  /api/download_subject_template/?subject_id=...
+    -> returns .xlsx
+
+ - POST /api/upload_marks_subject/  (form-data)
+    fields: file, subject_id, teacher_name, credits
+    -> { status:"saved" }
+
+Adjust endpoints if your actual URLs differ.
+*/
+
+// class info from localStorage (set earlier in flow)
+const branch = localStorage.getItem("branch") || "ISE";
+const semester = localStorage.getItem("semester") || "5";
+const section = localStorage.getItem("section") || "A";
+document.getElementById("classInfo").innerText = `${branch} • Sem ${semester} • Sec ${section}`;
+
+// elements
+const subjectSelect = document.getElementById("subjectSelect");
+const subjectList = document.getElementById("subjectList");
+const refreshBtn = document.getElementById("refreshBtn");
+const downloadTemplateBtn = document.getElementById("downloadTemplateBtn");
+const uploadBtn = document.getElementById("uploadBtn");
+const marksFile = document.getElementById("marksFile");
+const teacherNameEl = document.getElementById("teacherName");
+const creditsInput = document.getElementById("creditsInput");
+const successMsg = document.getElementById("successMsg");
+const errMsg = document.getElementById("errMsg");
+
+const openAdd = document.getElementById("openAdd");
+const createSubjectBtn = document.getElementById("createSubjectBtn");
+const newSubName = document.getElementById("newSubName");
+const newSubCode = document.getElementById("newSubCode");
+const newCredits = document.getElementById("newCredits");
+const previewBtn = document.getElementById("previewBtn");
+
+let subjectsCache = [];
+
+// utility: fetch subjects
+async function loadSubjects(){
+  subjectSelect.innerHTML = '<option value="">-- loading subjects --</option>';
+  subjectList.innerHTML = '';
+  try {
+    const res = await fetch(`/api/list_subjects/?branch=${encodeURIComponent(branch)}&semester=${encodeURIComponent(semester)}&section=${encodeURIComponent(section)}`);
+    const data = await res.json();
+    subjectsCache = data.subjects || [];
+    renderSubjects();
+  } catch (err) {
+    console.error("loadSubjects:", err);
+    subjectSelect.innerHTML = '<option value="">-- failed to load --</option>';
+    subjectList.innerHTML = '<div class="muted">Failed to fetch subjects</div>';
+  }
+}
+
+function renderSubjects(){
+  subjectSelect.innerHTML = '<option value="">-- choose subject --</option>';
+  subjectList.innerHTML = '';
+  subjectsCache.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.text = `${s.subject} (${s.subcode}) ${s.credits ? '• '+s.credits+'cr' : ''}`;
+    opt.dataset.credits = s.credits || '';
+    subjectSelect.appendChild(opt);
+
+    const div = document.createElement('div');
+    div.className = 'subject-item';
+    div.innerHTML = `<div><b>${s.subject}</b> <div class="muted">${s.subcode} • ${s.credits || '-'} cr</div></div>
+                     <div class="muted">${s.faculty || ''}</div>`;
+    subjectList.appendChild(div);
+  });
+}
+
+// when select subject, fill credits
+subjectSelect.addEventListener('change', ()=>{
+  const id = subjectSelect.value;
+  if(!id){ creditsInput.value = ''; return; }
+  const s = subjectsCache.find(x => String(x.id) === String(id));
+  if(s) creditsInput.value = s.credits || '';
+  else creditsInput.value = '';
+});
+
+// create subject
+createSubjectBtn.addEventListener('click', async ()=>{
+  const name = newSubName.value.trim();
+  const code = newSubCode.value.trim();
+  const credits = newCredits.value;
+  if(!name || !code || !credits){ alert("Please enter name, code and credits"); return; }
+
+  createSubjectBtn.addEventListener('click', async ()=>{
+  const name = newSubName.value.trim();
+  const code = newSubCode.value.trim();
+  const credits = newCredits.value;
+  if(!name || !code || !credits){ alert("Please enter name, code and credits"); return; }
+
+  const body = {
+    branch: branch,
+    semester: semester,
+    section: section,
+    subject: name,
+    subcode: code,
+    faculty: "",
+    credits: Number(credits)
+  };
+
+  try {
+    createSubjectBtn.disabled = true;
+    createSubjectBtn.innerText = "Creating...";
+    const res = await fetch("/api/create_subject/", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(body)
+    });
+    const out = await res.json();
+    if(out.status === "success" && out.subject_id){
+      await loadSubjects();
+      subjectSelect.value = out.subject_id;
+      const s = subjectsCache.find(x=>String(x.id) === String(out.subject_id));
+      if(s) creditsInput.value = s.credits || '';
+      newSubName.value = ""; newSubCode.value = ""; newCredits.value = "";
+      successMsg.innerText = "Subject created and selected.";
+      successMsg.className = "msg success";
+      successMsg.style.display = "block";
+      setTimeout(()=> successMsg.style.display = "none", 2500);
+    } else {
+      alert("Failed to create subject");
+    }
+  } catch(err){
+    console.error(err);
+    alert("Server error creating subject");
+  } finally {
+    createSubjectBtn.disabled = false;
+    createSubjectBtn.innerText = "Create";
+  }
+});
+
+// download template button
+downloadTemplateBtn.addEventListener('click', ()=>{
+  const id = subjectSelect.value;
+  if(!id){ alert("Select subject first"); return; }
+  // open download in same tab (user can save). This will only download the template file.
+  window.location.href = `/api/download_subject_template/?subject_id=${encodeURIComponent(id)}`;
+});
+
+// upload marks
+uploadBtn.addEventListener('click', async ()=>{
+  successMsg.style.display = 'none'; errMsg.style.display = 'none'; errMsg.innerText = '';
+
+  const id = subjectSelect.value;
+  if(!id){ errMsg.innerText = "Please select a subject."; errMsg.style.display='block'; return; }
+  const file = marksFile.files[0];
+  if(!file){ errMsg.innerText = "Choose an .xlsx file to upload."; errMsg.style.display='block'; return; }
+
+  const teacher = teacherNameEl.value.trim();
+  const credits = creditsInput.value;
+
+  const form = new FormData();
+  form.append("file", file);
+  form.append("subject_id", id);
+  form.append("teacher_name", teacher);
+  if(credits) form.append("credits", credits);
+
+  try {
+    uploadBtn.disabled = true;
+    uploadBtn.innerText = "Uploading...";
+    const res = await fetch("/api/upload_marks_subject/", { method: "POST", body: form });
+    const out = await res.json();
+    if(out.status === "saved"){
+      successMsg.innerText = "Marks uploaded and saved.";
+      successMsg.className = "msg success";
+      successMsg.style.display = "block";
+      // optionally refresh subjects (if credits got updated)
+      await loadSubjects();
+      marksFile.value = "";
+    } else {
+      errMsg.innerText = out.error || "Upload failed";
+      errMsg.style.display = "block";
+    }
+  } catch(err){
+    console.error("upload error", err);
+    errMsg.innerText = "Network/server error during upload.";
+    errMsg.style.display = "block";
+  } finally {
+    uploadBtn.disabled = false;
+    uploadBtn.innerText = "Upload marks";
+  }
+});
+
+// preview file (simple client-side read of first sheet headers & first row)
+previewBtn.addEventListener('click', ()=>{
+  const file = marksFile.files[0];
+  if(!file){ alert("Choose file first to preview."); return; }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try {
+      // try to parse XLSX (if xlsx lib present on page) — but not required. We'll simply show filename & size.
+      alert("File ready: " + file.name + " (" + Math.round(file.size/1024) + " KB). Backend will parse headers. Make sure file matches template.");
+    } catch(err){
+      alert("Preview failed.");
+    }
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+// refresh button
+refreshBtn.addEventListener('click', loadSubjects);
+
+// initial load
+loadSubjects();
+
+// Logout function
+function logout() {
+  if (confirm('Are you sure you want to logout?')) {
+    localStorage.clear();
+    window.location.href = '/';
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: mit-marks-portal
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn backend_django.wsgi:application"
+    envVars:
+      - key: DEBUG
+        value: False
+      - key: SECRET_KEY
+        generateValue: true

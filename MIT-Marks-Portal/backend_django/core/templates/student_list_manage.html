@@ -1,0 +1,957 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Student List</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+:root {
+  --brand1: #6955f0;
+  --brand2: #a990ff;
+  --bg1: #f3f4ff;
+  --bg2: #ece9ff;
+  --text-dark: #1c1b29;
+  --text-light: #7d7a8b;
+  --radius: 16px;
+  --shadow: 0 12px 40px rgba(88,72,180,0.12);
+  --shadow-strong: 0 18px 60px rgba(88,72,180,0.18);
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background:
+    linear-gradient(135deg, var(--bg1), var(--bg2)),
+    radial-gradient(circle at top left, rgba(120,90,255,0.10), transparent 60%);
+  background-blend-mode: overlay;
+  padding: 20px;
+  color: var(--text-dark);
+  overflow: hidden;
+}
+
+.container {
+  width: 100%;
+  max-width: 1000px;
+  max-height: 95vh;
+  background: white;
+  border: 1px solid rgba(140,120,255,0.15);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  animation: fadeIn 0.5s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.header {
+  background: linear-gradient(90deg, var(--brand1), var(--brand2));
+  padding: 18px 32px 16px;
+  text-align: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.header-icon {
+  width: 52px;
+  height: 52px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+  backdrop-filter: blur(10px);
+}
+
+.header-icon i {
+  font-size: 24px;
+}
+
+.header h1 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 5px;
+  letter-spacing: -0.025em;
+}
+
+.header p {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.class-info {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-top: 8px;
+  display: inline-block;
+}
+
+.content {
+  padding: 20px 40px;
+  background: white;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 0;
+}
+
+.action-grid.two-col {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.action-grid.full {
+  grid-template-columns: 1fr;
+}
+
+.action-card {
+  background: white;
+  border: 2px solid #d9d6f7;
+  border-radius: 14px;
+  padding: 20px 18px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(105, 85, 240, 0.06);
+}
+
+.action-card.primary {
+  background: linear-gradient(135deg, #ece9ff, #f3f4ff);
+  border-color: var(--brand1);
+  border-width: 3px;
+}
+
+.action-card:hover {
+  border-color: var(--brand1);
+  transform: translateY(-8px);
+  box-shadow: 0 16px 40px rgba(105, 85, 240, 0.25);
+  background: linear-gradient(135deg, #ece9ff, #f3f4ff);
+  border-width: 3px;
+}
+
+.action-card.primary:hover {
+  box-shadow: 0 16px 40px rgba(105, 85, 240, 0.35);
+  transform: translateY(-10px);
+}
+
+.action-card-icon {
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, var(--brand1), var(--brand2));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+  box-shadow: 0 6px 18px rgba(105, 85, 240, 0.3);
+  transition: all 0.3s ease;
+}
+
+.action-card:hover .action-card-icon {
+  transform: scale(1.08) rotate(5deg);
+  box-shadow: 0 8px 22px rgba(105, 85, 240, 0.4);
+}
+
+.action-card-icon i {
+  font-size: 24px;
+  color: white;
+}
+
+.action-card-icon.success {
+  background: linear-gradient(135deg, var(--success), #059669);
+}
+
+.action-card-icon.warning {
+  background: linear-gradient(135deg, var(--warning), #d97706);
+}
+
+.action-card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+
+.action-card-desc {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  line-height: 1.4;
+  margin-bottom: 14px;
+  min-height: 36px;
+  font-weight: 500;
+}
+
+.status-card {
+  background: linear-gradient(135deg, #fafaff, #f3f4ff);
+  border: 2px solid #d9d6f7;
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px rgba(105, 85, 240, 0.08);
+  transition: all 0.3s ease;
+}
+
+.status-card:hover {
+  box-shadow: 0 8px 24px rgba(105, 85, 240, 0.12);
+  transform: translateY(-2px);
+}
+
+.status-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  font-size: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.status-icon.warning {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: var(--warning);
+}
+
+.status-icon.success {
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  color: var(--success);
+}
+
+.status-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+
+.status-description {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.btn {
+  width: 100%;
+  padding: 11px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  opacity: 1;
+  visibility: visible;
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.01em;
+}
+
+.step-number {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, var(--brand1), var(--brand2));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: white;
+  box-shadow: 0 3px 10px rgba(105, 85, 240, 0.35);
+  transition: all 0.3s ease;
+}
+
+.action-card:hover .step-number {
+  transform: scale(1.1);
+  box-shadow: 0 4px 14px rgba(105, 85, 240, 0.45);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--brand1), var(--brand2));
+  color: white;
+  box-shadow: 0 4px 16px rgba(105, 85, 240, 0.3);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+.btn-primary:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(105, 85, 240, 0.45);
+  background: linear-gradient(135deg, #7c6bf7, #b89fff);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #fafaff, white);
+  color: var(--text-dark);
+  border: 2px solid #d9d6f7;
+  box-shadow: 0 3px 12px rgba(105, 85, 240, 0.08);
+}
+
+.btn-secondary:hover {
+  border-color: var(--brand1);
+  color: var(--brand1);
+  background: linear-gradient(135deg, #ece9ff, #f3f4ff);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(105, 85, 240, 0.2);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--success), #059669);
+  color: white;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: flex !important;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+}
+
+.file-input-wrapper {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.file-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 2px dashed #d9d6f7;
+  border-radius: 10px;
+  background: white;
+  color: var(--text-light);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(105, 85, 240, 0.08);
+}
+
+.file-input:hover {
+  border-color: var(--brand1);
+  background: linear-gradient(135deg, #fafaff, #f3f4ff);
+  border-style: solid;
+  box-shadow: 0 4px 16px rgba(105, 85, 240, 0.2);
+  transform: translateY(-2px);
+}
+
+.file-input:focus {
+  outline: none;
+  border-color: var(--brand1);
+  border-style: solid;
+  box-shadow: 0 0 0 4px rgba(105, 85, 240, 0.15);
+}
+
+.table-container {
+  background: white;
+  border: 2px solid #d9d6f7;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-top: 18px;
+  max-height: 300px;
+  overflow-y: auto;
+  box-shadow: 0 4px 16px rgba(105, 85, 240, 0.08);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  background: linear-gradient(135deg, var(--brand1), var(--brand2));
+  padding: 13px 14px;
+  text-align: left;
+  font-weight: 700;
+  color: white;
+  border-bottom: 2px solid #d9d6f7;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+td {
+  padding: 11px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+}
+
+tr:hover {
+  background: linear-gradient(90deg, #fafaff, #f3f4ff);
+  transform: scale(1.001);
+  box-shadow: 0 2px 8px rgba(105, 85, 240, 0.05);
+}
+
+.alert {
+  padding: 11px 15px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.alert-success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+}
+
+.alert-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+}
+
+.alert-info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #2563eb;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn:not(:disabled) {
+  opacity: 1;
+  visibility: visible;
+}
+
+
+
+.table-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--brand1), var(--brand2));
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #7c6bf7, #b89fff);
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-icon">
+      <i class="fas fa-users-cog"></i>
+    </div>
+    <h1>Student List Manager</h1>
+    <p>Manage your class student list</p>
+    <div class="class-info" id="classInfo"></div>
+  </div>
+  
+  <div class="content">
+    <div id="alertContainer"></div>
+    
+    <!-- No list state: Simple 2-step setup -->
+    <div id="noListArea">
+      <div class="status-card">
+        <div class="status-icon warning">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="status-title">No Student List Found</div>
+        <div class="status-description">
+          Create your student list in 2 easy steps
+        </div>
+      </div>
+      
+      <div class="action-grid two-col">
+        <div class="action-card" onclick="downloadBlankTemplate()">
+          <div class="step-number">1</div>
+          <div class="action-card-icon">
+            <i class="fas fa-file-download"></i>
+          </div>
+          <div class="action-card-title">Get Template</div>
+          <div class="action-card-desc">Download blank Excel template</div>
+          <button class="btn btn-secondary">
+            <i class="fas fa-download"></i>
+            Download Template
+          </button>
+        </div>
+        
+        <div class="action-card primary">
+          <div class="step-number">2</div>
+          <div class="action-card-icon">
+            <i class="fas fa-file-upload"></i>
+          </div>
+          <div class="action-card-title">Upload List</div>
+          <div class="action-card-desc">Upload filled Excel file</div>
+          <div class="file-input-wrapper">
+            <input type="file" id="uploadFile" accept=".xlsx" class="file-input">
+          </div>
+          <button class="btn btn-primary" onclick="uploadStudentList()">
+            <i class="fas fa-upload"></i>
+            Upload File
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- List exists state: Main actions + optional replace -->
+    <div id="listExistsArea" style="display:none;">
+      <div class="status-card">
+        <div class="status-icon success">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="status-title">Student List Ready</div>
+        <div class="status-description">
+          <span id="studentCount">0</span> students • View, download, or continue to marks
+        </div>
+      </div>
+      
+      <div class="action-grid">
+        <div class="action-card" onclick="viewList()">
+          <div class="action-card-icon">
+            <i class="fas fa-list"></i>
+          </div>
+          <div class="action-card-title">View Students</div>
+          <div class="action-card-desc">See complete list</div>
+          <button class="btn btn-secondary">
+            <i class="fas fa-eye"></i>
+            View
+          </button>
+        </div>
+        
+        <div class="action-card" onclick="downloadCurrentList()">
+          <div class="action-card-icon">
+            <i class="fas fa-file-excel"></i>
+          </div>
+          <div class="action-card-title">Download List</div>
+          <div class="action-card-desc">Export to Excel</div>
+          <button class="btn btn-secondary">
+            <i class="fas fa-download"></i>
+            Download
+          </button>
+        </div>
+        
+        <div class="action-card primary" onclick="goNext()">
+          <div class="action-card-icon success">
+            <i class="fas fa-arrow-circle-right"></i>
+          </div>
+          <div class="action-card-title">Continue</div>
+          <div class="action-card-desc">Go to marks upload</div>
+          <button class="btn btn-success">
+            <i class="fas fa-arrow-right"></i>
+            Next Step
+          </button>
+        </div>
+      </div>
+      
+      <div class="action-grid full" style="margin-top: 20px;">
+        <div class="action-card">
+          <div class="action-card-icon warning">
+            <i class="fas fa-sync-alt"></i>
+          </div>
+          <div class="action-card-title">Replace List (Optional)</div>
+          <div class="action-card-desc">Only if you need to upload a completely new student list</div>
+          <div class="file-input-wrapper">
+            <input type="file" id="replaceFile" accept=".xlsx" class="file-input">
+          </div>
+          <button class="btn btn-secondary" onclick="replaceList()">
+            <i class="fas fa-sync-alt"></i>
+            Replace
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-container" id="tableBox" style="display:none;">
+      <table id="studentTable"></table>
+    </div>
+  </div>
+</div>
+
+<script>
+let branch = localStorage.getItem("branch");
+let semester = localStorage.getItem("semester");
+let section = localStorage.getItem("section");
+
+document.getElementById("classInfo").innerHTML =
+  `<i class="fas fa-graduation-cap" style="margin-right: 8px;"></i>${branch} • Semester ${semester} • Section ${section}`;
+
+function showAlert(message, type = 'info') {
+  const alertContainer = document.getElementById('alertContainer');
+  const alertDiv = document.createElement('div');
+  alertDiv.className = `alert alert-${type}`;
+  
+  const icon = type === 'success' ? 'check-circle' : 
+               type === 'error' ? 'exclamation-circle' : 
+               'info-circle';
+  
+  alertDiv.innerHTML = `<i class="fas fa-${icon}"></i>${message}`;
+  alertContainer.appendChild(alertDiv);
+  
+  setTimeout(() => {
+    if (alertDiv.parentNode) {
+      alertDiv.parentNode.removeChild(alertDiv);
+    }
+  }, 5000);
+}
+
+function clearAlerts() {
+  document.getElementById('alertContainer').innerHTML = '';
+}
+
+function setButtonLoading(buttonElement, loading = true) {
+  if (loading) {
+    buttonElement.disabled = true;
+    const originalText = buttonElement.innerHTML;
+    buttonElement.dataset.originalText = originalText;
+    buttonElement.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Loading...`;
+  } else {
+    buttonElement.disabled = false;
+    buttonElement.innerHTML = buttonElement.dataset.originalText || buttonElement.innerHTML;
+  }
+}
+
+async function fetchStudents() {
+  try {
+    let res = await fetch(`/api/get_students/?branch=${branch}&semester=${semester}&section=${section}`);
+    let data = await res.json();
+    return data.students || [];
+  } catch {
+    return [];
+  }
+}
+
+window.onload = async () => {
+  clearAlerts();
+  showAlert('Loading...', 'info');
+  
+  try {
+    let list = await fetchStudents();
+    clearAlerts();
+    
+    if (list.length > 0) {
+      document.getElementById("noListArea").style.display = "none";
+      document.getElementById("listExistsArea").style.display = "block";
+      document.getElementById("studentCount").innerText = list.length;
+      showAlert(`${list.length} students found`, 'success');
+    } else {
+      document.getElementById("noListArea").style.display = "block";
+      document.getElementById("listExistsArea").style.display = "none";
+      showAlert('No student list found. Please create one.', 'info');
+    }
+  } catch (error) {
+    clearAlerts();
+    showAlert('Error loading data. Please refresh.', 'error');
+  }
+};
+
+function downloadBlankTemplate(){
+  const templateBtn = event.target;
+  setButtonLoading(templateBtn, true);
+  clearAlerts();
+  showAlert('Generating template...', 'info');
+  
+  try {
+    let sampleData = [
+      ["Sl.No", "USN", "Name"],
+      [1, "1XX21CS001", "Sample Student 1"],
+      [2, "1XX21CS002", "Sample Student 2"],
+      [3, "1XX21CS003", "Sample Student 3"]
+    ];
+    
+    let wb = XLSX.utils.book_new();
+    let ws = XLSX.utils.aoa_to_sheet(sampleData);
+    XLSX.utils.book_append_sheet(wb, ws, "Students");
+    
+    const fileName = `Student_List_Template_${branch}_Sem${semester}_Sec${section}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+    
+    clearAlerts();
+    showAlert('Template downloaded successfully!', 'success');
+  } catch (error) {
+    clearAlerts();
+    showAlert('Failed to generate template', 'error');
+  } finally {
+    setButtonLoading(templateBtn, false);
+  }
+}
+
+async function uploadStudentList(){
+  const uploadBtn = event.target;
+  let file = uploadFile.files[0];
+  
+  if(!file) {
+    showAlert('Please select an Excel file to upload', 'error');
+    return;
+  }
+  
+  clearAlerts();
+  setButtonLoading(uploadBtn, true);
+  showAlert('Processing Excel file...', 'info');
+
+  try {
+    readExcel(file, async rows => {
+      let students = convertRows(rows);
+      if (students.length === 0) {
+        clearAlerts();
+        showAlert('No valid student data found in the file', 'error');
+        setButtonLoading(uploadBtn, false);
+        return;
+      }
+      
+      showAlert(`Found ${students.length} students. Uploading...`, 'info');
+      await uploadToBackend(students);
+      setButtonLoading(uploadBtn, false);
+    });
+  } catch (error) {
+    clearAlerts();
+    showAlert('Failed to process the Excel file.', 'error');
+    setButtonLoading(uploadBtn, false);
+  }
+}
+
+async function replaceList(){
+  const replaceBtn = event.target;
+  let file = replaceFile.files[0];
+  
+  if(!file) {
+    showAlert('Please select an Excel file', 'error');
+    return;
+  }
+  
+  if (!confirm('Are you sure you want to replace the current student list?')) {
+    return;
+  }
+  
+  clearAlerts();
+  setButtonLoading(replaceBtn, true);
+  showAlert('Processing replacement file...', 'info');
+
+  try {
+    readExcel(file, async rows => {
+      let students = convertRows(rows);
+      if (students.length === 0) {
+        clearAlerts();
+        showAlert('No valid student data found', 'error');
+        setButtonLoading(replaceBtn, false);
+        return;
+      }
+      
+      showAlert(`Replacing with ${students.length} students...`, 'info');
+      await uploadToBackend(students);
+      setButtonLoading(replaceBtn, false);
+    });
+  } catch (error) {
+    clearAlerts();
+    showAlert('Failed to process the file.', 'error');
+    setButtonLoading(replaceBtn, false);
+  }
+}
+
+function readExcel(file, callback){
+  let reader = new FileReader();
+  reader.onload = e => {
+    let wb = XLSX.read(e.target.result,{type:'binary'});
+    let ws = wb.Sheets[wb.SheetNames[0]];
+    let rows = XLSX.utils.sheet_to_json(ws,{header:1});
+    callback(rows);
+  };
+  reader.readAsBinaryString(file);
+}
+
+function convertRows(rows){
+  let arr = [];
+  for(let i=1;i<rows.length;i++){
+    if(rows[i][1])
+      arr.push({ sl: rows[i][0] || i, usn: rows[i][1], name: rows[i][2] });
+  }
+  return arr;
+}
+
+async function uploadToBackend(students){
+  try {
+    let res = await fetch("/api/upload_students/", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ branch, semester, section, students })
+    });
+
+    let out = await res.json();
+    
+    if(out.status === "success") {
+      clearAlerts();
+      showAlert(`Successfully uploaded ${students.length} students!`, 'success');
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      clearAlerts();
+      showAlert('Failed to upload student list', 'error');
+    }
+  } catch (error) {
+    clearAlerts();
+    showAlert('Network error. Please try again.', 'error');
+  }
+}
+
+async function viewList(){
+  const viewBtn = event.target;
+  setButtonLoading(viewBtn, true);
+  clearAlerts();
+  showAlert('Loading student list...', 'info');
+  
+  try {
+    let students = await fetchStudents();
+    let table = document.getElementById("studentTable");
+    table.innerHTML="";
+
+    let header = table.insertRow();
+    ["Sl.No","USN","Student Name"].forEach(t=>{
+      let th=document.createElement("th");
+      th.innerText=t; 
+      header.appendChild(th);
+    });
+
+    students.forEach((s, index)=>{
+      let r=table.insertRow();
+      r.insertCell().innerText = s.sl || (index + 1);
+      r.insertCell().innerText = s.usn;
+      r.insertCell().innerText = s.name;
+    });
+
+    clearAlerts();
+    showAlert(`Displaying ${students.length} students`, 'success');
+    document.getElementById("tableBox").style.display="block";
+    document.getElementById("tableBox").scrollIntoView({ behavior: 'smooth' });
+  } catch (error) {
+    clearAlerts();
+    showAlert('Failed to load student list', 'error');
+  } finally {
+    setButtonLoading(viewBtn, false);
+  }
+}
+
+async function downloadCurrentList(){
+  const downloadBtn = event.target;
+  setButtonLoading(downloadBtn, true);
+  clearAlerts();
+  showAlert('Preparing download...', 'info');
+  
+  try {
+    let students = await fetchStudents();
+    
+    if (students.length === 0) {
+      clearAlerts();
+      showAlert('No students found to download', 'error');
+      return;
+    }
+    
+    let rows = [["Sl.No","USN","Name"], ...students.map((s, index) => [s.sl || (index + 1), s.usn, s.name])];
+
+    let wb = XLSX.utils.book_new();
+    let ws = XLSX.utils.aoa_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, "Students");
+    
+    const fileName = `${branch}_Sem${semester}_Sec${section}_Students.xlsx`;
+    XLSX.writeFile(wb, fileName);
+    
+    clearAlerts();
+    showAlert(`Downloaded ${students.length} students successfully!`, 'success');
+  } catch (error) {
+    clearAlerts();
+    showAlert('Failed to download student list', 'error');
+  } finally {
+    setButtonLoading(downloadBtn, false);
+  }
+}
+
+function goNext(){
+  const continueBtn = event.target;
+  setButtonLoading(continueBtn, true);
+  clearAlerts();
+  showAlert('Proceeding to marks upload...', 'success');
+  
+  setTimeout(() => {
+    window.location.href = "/teacher/marks/";
+  }, 1000);
+}
+</script>
+</body>
+</html>

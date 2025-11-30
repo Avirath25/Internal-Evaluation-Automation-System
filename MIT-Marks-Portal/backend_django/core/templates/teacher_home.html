@@ -1,0 +1,826 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Dashboard - Select Class</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+<style>
+:root {
+  --brand1: #6955f0;
+  --brand2: #a990ff;
+  --bg1: #f3f4ff;
+  --bg2: #ece9ff;
+  --text-dark: #1c1b29;
+  --text-light: #7d7a8b;
+  --radius: 16px;
+  --shadow: 0 12px 40px rgba(88,72,180,0.12);
+  --shadow-strong: 0 18px 60px rgba(88,72,180,0.18);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background:
+    linear-gradient(135deg, var(--bg1), var(--bg2)),
+    radial-gradient(circle at top left, rgba(120,90,255,0.10), transparent 60%);
+  background-blend-mode: overlay;
+  padding: 20px;
+  color: var(--text-dark);
+  overflow: hidden;
+}
+
+.container {
+  width: 100%;
+  max-width: 800px;
+  max-height: 95vh;
+  background: white;
+  border: 1px solid rgba(140,120,255,0.15);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  animation: fadeIn 0.5s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.header {
+  background: linear-gradient(135deg, #6955f0 0%, #a990ff 50%, #6955f0 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease infinite;
+  padding: 24px 32px 20px;
+  text-align: center;
+  color: white;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  animation: rotate 20s linear infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.header-icon {
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  animation: iconPulse 3s ease-in-out infinite;
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); }
+  50% { transform: scale(1.08); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25); }
+}
+
+.header-icon i {
+  font-size: 28px;
+  animation: iconFloat 3s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
+.header h1 {
+  font-size: 1.75rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 1;
+  animation: titleSlideIn 0.8s ease-out;
+  background: linear-gradient(to right, #ffffff, #f0e7ff, #ffffff);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: titleShine 3s linear infinite, titleSlideIn 0.8s ease-out;
+}
+
+@keyframes titleSlideIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes titleShine {
+  to { background-position: 200% center; }
+}
+
+.header p {
+  font-size: 0.95rem;
+  opacity: 0.95;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+  animation: subtitleFadeIn 1s ease-out 0.3s both;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes subtitleFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 0.95; transform: translateY(0); }
+}
+
+.form-container {
+  padding: 28px 45px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-group:last-of-type {
+  margin-bottom: 28px;
+}
+
+label {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text-light);
+  display: block;
+}
+
+.dropdown-container {
+  position: relative;
+}
+
+.dropdown-input {
+  width: 100%;
+  padding: 14px 50px 14px 18px;
+  border: 2px solid #d9d6f7;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 500;
+  background: white;
+  color: var(--text-dark);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(105, 85, 240, 0.05);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-input:focus {
+  outline: none;
+  border-color: var(--brand1);
+  box-shadow: 0 0 0 4px rgba(120,90,255,0.15), 0 4px 12px rgba(105, 85, 240, 0.1);
+  background: white;
+}
+
+.dropdown-input.has-value {
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.dropdown-input::placeholder {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.dropdown-arrow {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+  font-size: 16px;
+  pointer-events: none;
+  transition: transform 0.2s ease;
+}
+
+.dropdown-container.open .dropdown-arrow {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.dropdown-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid var(--brand1);
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 8px 24px rgba(105, 85, 240, 0.15);
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+  animation: dropdownSlide 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-container.open .dropdown-options {
+  display: block;
+}
+
+.dropdown-container.open .dropdown-input {
+  border-radius: 14px 14px 0 0;
+  border-color: var(--brand1);
+}
+
+.dropdown-option {
+  padding: 14px 20px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-option:last-child {
+  border-bottom: none;
+}
+
+.dropdown-option:hover {
+  background: linear-gradient(90deg, #ece9ff, #f3f4ff);
+  color: var(--brand1);
+  padding-left: 24px;
+  font-weight: 600;
+}
+
+.dropdown-option.selected {
+  background: linear-gradient(90deg, var(--brand1), var(--brand2));
+  color: white;
+  font-weight: 600;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.dropdown-option.highlighted {
+  background: linear-gradient(90deg, #ece9ff, #f3f4ff);
+  color: var(--brand1);
+  padding-left: 24px;
+  font-weight: 600;
+}
+
+.continue-btn {
+  width: 100%;
+  padding: 16px 0;
+  background: linear-gradient(135deg, var(--brand1), var(--brand2));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(105, 85, 240, 0.3);
+  letter-spacing: 0.3px;
+  position: relative;
+  overflow: hidden;
+}
+
+.continue-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.continue-btn:hover::before {
+  left: 100%;
+}
+
+.continue-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(105, 85, 240, 0.4);
+  background: linear-gradient(135deg, #7c6bf7, #b89fff);
+}
+
+.continue-btn:active {
+  transform: translateY(0);
+}
+
+.continue-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  background: linear-gradient(135deg, #9ca3af, #d1d5db);
+}
+
+
+
+.error-message {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 11px 15px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+  display: none;
+}
+
+.success-message {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+  padding: 11px 15px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+  display: none;
+}
+
+
+
+.dropdown-options::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-options::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.dropdown-options::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.dropdown-options::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="header-icon">
+            <i class="fas fa-chalkboard-teacher"></i>
+        </div>
+        <h1>Teacher Dashboard</h1>
+        <p>Select your class details to continue</p>
+    </div>
+    
+    <div class="form-container">
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+        
+        <!-- Branch Selection -->
+        <div class="form-group">
+            <label for="branchInput">
+                <i class="fas fa-code-branch" style="margin-right: 8px; color: var(--primary);"></i>
+                Branch
+            </label>
+            <div class="dropdown-container" id="branchContainer">
+                <input 
+                    type="text" 
+                    class="dropdown-input" 
+                    id="branchInput" 
+                    placeholder="Select your branch"
+                    readonly
+                >
+                <i class="fas fa-chevron-down dropdown-arrow"></i>
+                <div class="dropdown-options" id="branchOptions"></div>
+            </div>
+        </div>
+
+        <!-- Semester Selection -->
+        <div class="form-group">
+            <label for="semInput">
+                <i class="fas fa-calendar-alt" style="margin-right: 8px; color: var(--primary);"></i>
+                Semester
+            </label>
+            <div class="dropdown-container" id="semContainer">
+                <input 
+                    type="text" 
+                    class="dropdown-input" 
+                    id="semInput" 
+                    placeholder="Select semester"
+                    readonly
+                >
+                <i class="fas fa-chevron-down dropdown-arrow"></i>
+                <div class="dropdown-options" id="semOptions"></div>
+            </div>
+        </div>
+
+        <!-- Section Selection -->
+        <div class="form-group">
+            <label for="secInput">
+                <i class="fas fa-users" style="margin-right: 8px; color: var(--primary);"></i>
+                Section
+            </label>
+            <div class="dropdown-container" id="secContainer">
+                <input 
+                    type="text" 
+                    class="dropdown-input" 
+                    id="secInput" 
+                    placeholder="Select section"
+                    readonly
+                >
+                <i class="fas fa-chevron-down dropdown-arrow"></i>
+                <div class="dropdown-options" id="secOptions"></div>
+            </div>
+        </div>
+
+        <button class="continue-btn" id="continueBtn" onclick="continueNext()">
+            <i class="fas fa-arrow-right" style="margin-right: 8px;"></i>
+            Continue to Student List
+        </button>
+    </div>
+</div>
+
+<script>
+// Dropdown data with enhanced options
+const dropdownData = {
+    branches: [
+        { value: "CSE", label: "Computer Science & Engineering", icon: "fas fa-laptop-code" },
+        { value: "ISE", label: "Information Science & Engineering", icon: "fas fa-database" },
+        { value: "ECE", label: "Electronics & Communication Engineering", icon: "fas fa-microchip" },
+        { value: "MECH", label: "Mechanical Engineering", icon: "fas fa-cogs" },
+        { value: "CIVIL", label: "Civil Engineering", icon: "fas fa-building" }
+    ],
+    semesters: [
+        { value: "1", label: "1st Semester", icon: "fas fa-calendar" },
+        { value: "2", label: "2nd Semester", icon: "fas fa-calendar" },
+        { value: "3", label: "3rd Semester", icon: "fas fa-calendar" },
+        { value: "4", label: "4th Semester", icon: "fas fa-calendar" },
+        { value: "5", label: "5th Semester", icon: "fas fa-calendar" },
+        { value: "6", label: "6th Semester", icon: "fas fa-calendar" },
+        { value: "7", label: "7th Semester", icon: "fas fa-calendar" },
+        { value: "8", label: "8th Semester", icon: "fas fa-calendar" }
+    ],
+    sections: [
+        { value: "A", label: "Section A", icon: "fas fa-users" },
+        { value: "B", label: "Section B", icon: "fas fa-users" },
+        { value: "C", label: "Section C", icon: "fas fa-users" }
+    ]
+};
+
+// Enhanced dropdown functionality
+class ModernDropdown {
+    constructor(containerId, inputId, optionsId, data) {
+        this.container = document.getElementById(containerId);
+        this.input = document.getElementById(inputId);
+        this.options = document.getElementById(optionsId);
+        this.data = data;
+        this.selectedValue = null;
+        this.highlightedIndex = -1;
+        this.outsideClickHandler = this.handleOutsideClick.bind(this);
+        this.keydownHandler = this.handleKeydown.bind(this);
+        
+        this.init();
+    }
+    
+    init() {
+        this.renderOptions();
+        this.bindEvents();
+    }
+    
+    renderOptions() {
+        this.options.innerHTML = '';
+        
+        this.data.forEach(item => {
+            const option = document.createElement('div');
+            option.className = 'dropdown-option';
+            option.innerHTML = `
+                <i class="${item.icon}" style="margin-right: 12px; color: var(--brand1); width: 16px;"></i>
+                <span style="font-weight: 600;">${item.value}</span>
+                <span style="margin-left: 8px; color: var(--text-light); font-size: 13px;">${item.label.replace(item.value, '').replace(/^\s*-\s*/, '')}</span>
+            `;
+            option.dataset.value = item.value;
+            option.dataset.label = item.label;
+            option.setAttribute('role', 'option');
+            option.setAttribute('tabindex', '0');
+            
+            option.addEventListener('click', () => this.selectOption(item));
+            option.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.selectOption(item);
+                }
+            });
+            this.options.appendChild(option);
+        });
+    }
+    
+    selectOption(item) {
+        this.selectedValue = item.value;
+        this.input.value = item.label;
+        this.input.title = item.label;
+        this.input.classList.add('has-value');
+        this.closeDropdown();
+        this.updateContinueButton();
+        
+        // Add visual feedback with success animation
+        this.input.style.borderColor = 'var(--brand1)';
+        this.input.style.boxShadow = '0 0 0 4px rgba(105, 85, 240, 0.2)';
+        this.input.style.transform = 'scale(1.02)';
+        
+        setTimeout(() => {
+            this.input.style.borderColor = '#d9d6f7';
+            this.input.style.boxShadow = 'none';
+            this.input.style.transform = 'scale(1)';
+        }, 800);
+    }
+    
+    openDropdown() {
+        // Close other dropdowns first
+        document.querySelectorAll('.dropdown-container.open').forEach(container => {
+            if (container !== this.container) {
+                container.classList.remove('open');
+            }
+        });
+        
+        this.container.classList.add('open');
+        this.highlightedIndex = -1;
+        setTimeout(() => {
+            document.addEventListener('click', this.outsideClickHandler);
+        }, 10);
+    }
+    
+    closeDropdown() {
+        this.container.classList.remove('open');
+        this.highlightedIndex = -1;
+        this.updateHighlight();
+        document.removeEventListener('click', this.outsideClickHandler);
+    }
+    
+    handleOutsideClick(e) {
+        if (!this.container.contains(e.target)) {
+            this.closeDropdown();
+        }
+    }
+    
+    bindEvents() {
+        this.input.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (this.container.classList.contains('open')) {
+                this.closeDropdown();
+            } else {
+                this.openDropdown();
+            }
+        });
+        
+        this.input.addEventListener('keydown', this.keydownHandler);
+    }
+    
+    handleKeydown(e) {
+        if (!this.container.classList.contains('open')) {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.openDropdown();
+                this.highlightedIndex = 0;
+                this.updateHighlight();
+            }
+            return;
+        }
+        
+        const optionElements = this.options.querySelectorAll('.dropdown-option');
+        
+        switch(e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                this.highlightedIndex = Math.min(this.highlightedIndex + 1, this.data.length - 1);
+                this.updateHighlight();
+                this.scrollToHighlighted();
+                break;
+                
+            case 'ArrowUp':
+                e.preventDefault();
+                this.highlightedIndex = Math.max(this.highlightedIndex - 1, 0);
+                this.updateHighlight();
+                this.scrollToHighlighted();
+                break;
+                
+            case 'Enter':
+            case ' ':
+                e.preventDefault();
+                if (this.highlightedIndex >= 0 && this.highlightedIndex < this.data.length) {
+                    this.selectOption(this.data[this.highlightedIndex]);
+                }
+                break;
+                
+            case 'Escape':
+                e.preventDefault();
+                this.closeDropdown();
+                break;
+        }
+    }
+    
+    updateHighlight() {
+        const optionElements = this.options.querySelectorAll('.dropdown-option');
+        optionElements.forEach((el, index) => {
+            if (index === this.highlightedIndex) {
+                el.classList.add('highlighted');
+            } else {
+                el.classList.remove('highlighted');
+            }
+        });
+    }
+    
+    scrollToHighlighted() {
+        const optionElements = this.options.querySelectorAll('.dropdown-option');
+        if (this.highlightedIndex >= 0 && this.highlightedIndex < optionElements.length) {
+            const highlightedElement = optionElements[this.highlightedIndex];
+            highlightedElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+    }
+    
+    updateContinueButton() {
+        const branch = branchDropdown.selectedValue;
+        const semester = semesterDropdown.selectedValue;
+        const section = sectionDropdown.selectedValue;
+        
+        const continueBtn = document.getElementById('continueBtn');
+        const allSelected = branch && semester && section;
+        
+        continueBtn.disabled = !allSelected;
+        
+        if (allSelected) {
+            continueBtn.innerHTML = `
+                <i class="fas fa-arrow-right" style="margin-right: 8px;"></i>
+                Continue to Student List
+            `;
+        } else {
+            continueBtn.innerHTML = `
+                <i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i>
+                Please select all fields
+            `;
+        }
+    }
+}
+
+// Initialize dropdowns
+let branchDropdown, semesterDropdown, sectionDropdown;
+
+document.addEventListener('DOMContentLoaded', () => {
+    branchDropdown = new ModernDropdown('branchContainer', 'branchInput', 'branchOptions', dropdownData.branches);
+    semesterDropdown = new ModernDropdown('semContainer', 'semInput', 'semOptions', dropdownData.semesters);
+    sectionDropdown = new ModernDropdown('secContainer', 'secInput', 'secOptions', dropdownData.sections);
+    
+    // Initial button state
+    document.getElementById('continueBtn').disabled = true;
+});
+
+// Enhanced continue function with validation and loading state
+function continueNext() {
+    const branch = branchDropdown.selectedValue;
+    const semester = semesterDropdown.selectedValue;
+    const section = sectionDropdown.selectedValue;
+    
+    // Clear previous messages
+    hideMessages();
+    
+    // Validation
+    if (!branch || !semester || !section) {
+        showError('Please select all required fields before continuing.');
+        return;
+    }
+    
+    // Show loading state
+    const continueBtn = document.getElementById('continueBtn');
+    const originalContent = continueBtn.innerHTML;
+    continueBtn.innerHTML = `
+        <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>
+        Loading...
+    `;
+    continueBtn.disabled = true;
+    
+    // Store selections
+    localStorage.setItem('branch', branch);
+    localStorage.setItem('semester', semester);
+    localStorage.setItem('section', section);
+    
+    // Show success message briefly
+    showSuccess(`Selected: ${branch} - Semester ${semester} - Section ${section}`);
+    
+    // Navigate after a short delay for better UX
+    setTimeout(() => {
+        window.location.href = '/teacher/student-list/';
+    }, 1000);
+}
+
+// Utility functions for messages
+function showError(message) {
+    const errorDiv = document.getElementById('errorMessage');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        errorDiv.style.display = 'none';
+    }, 5000);
+}
+
+function showSuccess(message) {
+    const successDiv = document.getElementById('successMessage');
+    successDiv.textContent = message;
+    successDiv.style.display = 'block';
+}
+
+function hideMessages() {
+    document.getElementById('errorMessage').style.display = 'none';
+    document.getElementById('successMessage').style.display = 'none';
+}
+
+// Add keyboard navigation
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        const continueBtn = document.getElementById('continueBtn');
+        if (!continueBtn.disabled) {
+            continueNext();
+        }
+    }
+    
+    if (e.key === 'Escape') {
+        // Close any open dropdowns
+        document.querySelectorAll('.dropdown-container.open').forEach(container => {
+            container.classList.remove('open');
+        });
+    }
+});
+
+// Add smooth transitions and animations
+function addLoadingAnimation() {
+    const steps = document.querySelectorAll('.progress-step');
+    steps.forEach((step, index) => {
+        setTimeout(() => {
+            step.classList.add('active');
+        }, index * 200);
+    });
+}
+
+// Initialize loading animation on page load
+window.addEventListener('load', () => {
+    setTimeout(addLoadingAnimation, 300);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,235 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CIE Calculator • 3/2/1 Credit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #eeecfa 0%, #d4d2f8 100%);
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      color: #31315a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .calc-card {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 8px 32px #b3bef421;
+      padding: 39px 19px 31px 19px;
+      max-width: 410px;
+      width: 98vw;
+      margin: 16px 0;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    h1 {
+      text-align: center;
+      color: #7a6bec;
+      margin-bottom: 26px;
+      font-size: 1.23rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      user-select: none;
+    }
+    .form-row {
+      margin-bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    label {
+      font-size: 1.06rem;
+      font-weight: 700;
+      color: #554ca7;
+      margin-bottom: 6px;
+      margin-left: 4px;
+    }
+    .cie-input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1.3px solid #e4e3fc;
+      background: #f6f7fb;
+      color: #554ab8;
+      font-size: 1.13rem;
+      font-weight: 700;
+      box-shadow: 0 .9px 6px #b7b3e624 inset;
+      transition: border .15s;
+      text-align: center;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: textfield;
+      margin-bottom: 0px;
+    }
+    .cie-input:focus {
+      border: 1.6px solid #847bf0;
+      outline: none;
+      background: #f3f6fe;
+    }
+    .cie-input::-webkit-outer-spin-button,
+    .cie-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0;}
+    .cie-input[type=number] { -moz-appearance: textfield; }
+    .calc-btn {
+      border: none;
+      border-radius: 13px;
+      background: linear-gradient(90deg,#8e7fff 0%,#b6aaff 95%);
+      color: #fff;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      font-size: 1.14rem;
+      padding: 15px 0;
+      margin: 18px 0 7px 0;
+      box-shadow: 0 7px 22px #b9a6fd29;
+      transition: background 0.13s, transform .11s, box-shadow .13s;
+      width: 100%;
+    }
+    .calc-btn:hover, .calc-btn:focus {
+      background: linear-gradient(91deg,#b6aaff 0%, #8e7fff 95%);
+      outline: none;
+      transform: scale(1.03);
+    }
+    .result-block {
+      margin: 12px auto 0 auto;
+      width: 99%;
+      text-align: center;
+      background: #f7f6ff;
+      border-radius: 13px;
+      box-shadow: 0 2px 8px #dbdbfb18;
+      padding: 15px 5px 13px 5px;
+      font-size: 1.19rem;
+      font-weight: 900;
+      color: #8a7cda;
+      min-height: 43px;
+      letter-spacing:.01em;
+    }
+    .grade-block {
+      margin: 14px auto 0 auto;
+      width: 93%;
+      text-align: center;
+      background: #f7f6ff;
+      border-radius: 13px;
+      box-shadow: 0 2px 8px #dbdbfb18;
+      padding: 10px 5px 10px 5px;
+      font-size: 1.12rem;
+      font-weight: 900;
+      color: #554ca7;
+      letter-spacing:.01em;
+      min-height: 34px;
+    }
+    .res-label { font-size: 1.13rem; font-weight: 700; color: #6e61aa;}
+    .res-num { color: #28226b; font-size: 1.18rem; font-weight: 900;}
+    @media (max-width: 500px){
+      .calc-card{padding:10px 1.7vw;}
+      h1{font-size:1.05rem;}
+      .result-block, .grade-block{font-size:1.03rem;}
+      label{font-size:1.02rem;}
+    }
+  </style>
+</head>
+<body>
+  <form class="calc-card" id="cieForm" autocomplete="off">
+    <h1>3/2/1 Credit Course CIE Calculator</h1>
+    <div class="form-row">
+      <label for="test1">Test-1 (out of 40)</label>
+      <input type="number" class="cie-input" id="test1" min="0" max="40" />
+    </div>
+    <div class="form-row">
+      <label for="test2">Test-2 (out of 40)</label>
+      <input type="number" class="cie-input" id="test2" min="0" max="40" />
+    </div>
+    <div class="form-row">
+      <label for="makeup">Makeup (out of 40)</label>
+      <input type="number" class="cie-input" id="makeup" min="0" max="40" />
+    </div>
+    <div class="form-row">
+      <label for="asg1">Assignment-1 (out of 25)</label>
+      <input type="number" class="cie-input" id="asg1" min="0" max="25" required />
+    </div>
+    <div class="form-row">
+      <label for="asg2">Assignment-2 (out of 25)</label>
+      <input type="number" class="cie-input" id="asg2" min="0" max="25" required />
+    </div>
+    <button type="submit" class="calc-btn">Calculate</button>
+    <div class="result-block" id="resultBlock"></div>
+    <div class="grade-block" id="gradeBlock"></div>
+  </form>
+  <script>
+    // Show browser validation style tooltip instantly
+    ["test1","test2","makeup","asg1","asg2"].forEach(function(id){
+      const el = document.getElementById(id);
+      el.addEventListener("input",function(){
+        if (el.value && !el.validity.valid) el.reportValidity();
+      });
+    });
+    // Enter goes to next field, not submit
+    const fields = ["test1", "test2", "makeup", "asg1", "asg2"];
+    fields.forEach((id, idx) => {
+      document.getElementById(id).addEventListener("keydown", function(ev){
+        if ((ev.key === "Enter" || ev.key === "Next") && idx < fields.length - 1) {
+          ev.preventDefault();
+          document.getElementById(fields[idx+1]).focus();
+        }
+      });
+    });
+
+    document.getElementById("cieForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      document.getElementById("resultBlock").textContent = "";
+      document.getElementById("gradeBlock").textContent = "";
+
+      // Collect internals (only filled/valid)
+      const t1 = document.getElementById("test1").value ? parseFloat(document.getElementById("test1").value) : null;
+      const t2 = document.getElementById("test2").value ? parseFloat(document.getElementById("test2").value) : null;
+      const mu = document.getElementById("makeup").value ? parseFloat(document.getElementById("makeup").value) : null;
+      const a1 = document.getElementById("asg1").value ? parseFloat(document.getElementById("asg1").value) : null;
+      const a2 = document.getElementById("asg2").value ? parseFloat(document.getElementById("asg2").value) : null;
+
+      // At least two internals needed, both assignments needed for calculation
+      let internals = [t1, t2, mu].filter(v=>v!==null && !isNaN(v));
+      if (internals.length < 2) {
+        document.getElementById("resultBlock").innerHTML =
+          `<span style="color:#d74b4b;font-weight:700;">Please enter any two of Test-1, Test-2, and Makeup.</span>`;
+        return;
+      }
+      if(a1===null||isNaN(a1)||a2===null||isNaN(a2)){
+        document.getElementById("resultBlock").innerHTML = `<span style="color:#d74b4b;font-weight:700;">Both assignments are required.</span>`;
+        return;
+      }
+
+      let best2 = internals.sort((a,b)=>b-a).slice(0,2);
+      let avg40 = (best2[0]+best2[1])/2;
+      let scaled25 = (avg40/40)*25;
+      let asgAvg = (a1+a2)/2;
+      let finalCie = Math.ceil(scaled25+asgAvg);
+
+      document.getElementById("resultBlock").innerHTML =
+        `<span class="res-label">The total marks obtained = </span><span class="res-num">${finalCie}</span>`;
+
+      // Grade block
+      let gradeTxt = "";
+      if (finalCie >= 45) gradeTxt = "O - Outstanding";
+      else if (finalCie >= 40) gradeTxt = "A+ - Excellent";
+      else if (finalCie >= 35) gradeTxt = "A - Very Good";
+      else if (finalCie >= 30) gradeTxt = "B+ - Good";
+      else if (finalCie >= 25) gradeTxt = "B - Above Average";
+      else if (finalCie >= 20) gradeTxt = "C - Average";
+      else if (finalCie >= 15) gradeTxt = "P - Pass";
+      else gradeTxt = "F - Fail";
+
+      document.getElementById("gradeBlock").innerHTML = `<b>Grade:</b> ${gradeTxt}`;
+    });
+  </script>
+</body>
+</html>

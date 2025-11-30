@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Add Students — MIT MYSORE</title>
+
+<link rel="stylesheet" href="css/styles.css" />
+
+<style>
+.container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 24px;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 40px #00000025;
+}
+.container h2 {
+  margin-bottom: 16px;
+  color: var(--text);
+}
+button {
+  margin-top: 10px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">MIT MYSORE · ADD STUDENTS</div>
+  <button class="logout" onclick="location.href='index.html'">Home</button>
+</div>
+
+<div class="container">
+  <h2>Add Student</h2>
+
+  <label>USN</label>
+  <input id="usn" placeholder="1MIT21CS001"/>
+
+  <label>Student Name</label>
+  <input id="name" placeholder="Enter full name"/>
+
+  <label>Semester</label>
+  <select id="sem">
+    <option value="">Select</option>
+    <option>1</option><option>2</option>
+    <option>3</option><option>4</option>
+    <option>5</option><option>6</option>
+    <option>7</option><option>8</option>
+  </select>
+
+  <label>Branch</label>
+  <select id="branch">
+    <option value="">Select</option>
+    <option>CSE</option>
+    <option>ECE</option>
+    <option>ME</option>
+    <option>CE</option>
+  </select>
+
+  <label>Section</label>
+  <input id="section" placeholder="A"/>
+
+  <button class="btn btn-primary" id="addStudentBtn">+ Add Student</button>
+
+  <p id="status" style="margin-top:15px; font-weight:700;"></p>
+</div>
+
+<script>
+async function addStudent() {
+  const usn = document.getElementById("usn").value.trim();
+  const name = document.getElementById("name").value.trim();
+  const sem = document.getElementById("sem").value;
+  const branch = document.getElementById("branch").value;
+  const section = document.getElementById("section").value.trim().toUpperCase();
+
+  if (!usn || !name || !sem || !branch || !section) {
+    document.getElementById("status").innerText = "Please fill all fields";
+    return;
+  }
+
+  // STEP 1 → get sem_id
+  let semResp = await fetch("http://localhost:3000/api/semesters", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ number: Number(sem) })
+  });
+  let semData = await semResp.json();
+  const sem_id = semData.id;
+
+  // STEP 2 → get branch_id
+  let branchResp = await fetch("http://localhost:3000/api/branches", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: branch })
+  });
+  let branchData = await branchResp.json();
+  const branch_id = branchData.id;
+
+  // STEP 3 → get section_id
+  let sectionResp = await fetch("http://localhost:3000/api/sections", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      sem_id: sem_id,
+      branch_id: branch_id,
+      name: section
+    })
+  });
+  let sectionData = await sectionResp.json();
+  const section_id = sectionData.id;
+
+  // STEP 4 → add student
+  let stuResp = await fetch("http://localhost:3000/api/students", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      usn,
+      name,
+      sem_id,
+      branch_id,
+      section_id
+    })
+  });
+
+  let stuData = await stuResp.json();
+
+  document.getElementById("status").innerText =
+    "Student Added Successfully (ID: " + stuData.id + ")";
+
+  // CLEAR fields
+  document.getElementById("usn").value = "";
+  document.getElementById("name").value = "";
+  document.getElementById("section").value = "";
+}
+
+document.getElementById("addStudentBtn").onclick = addStudent;
+</script>
+
+</body>
+</html>

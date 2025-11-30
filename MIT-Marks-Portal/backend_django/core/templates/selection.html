@@ -1,0 +1,101 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CIE Calculator • MIT Mysore</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #f5f8ff 0%, #eae2fe 80%, #f6f3ff 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      background: rgba(255,255,255,0.97);
+      border-radius: 22px;
+      box-shadow: 0 8px 36px #a3b1e857, 0 1.5px 12px #a389ff18;
+      padding: 38px 32px 30px 32px;
+      max-width: 370px;
+      width: 97vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .mit-title {
+      font-size: 1.65rem;
+      font-weight: 900;
+      color: #5646ba;
+      letter-spacing: 0.04em;
+      margin-bottom: 18px;
+      margin-top: -2px;
+      text-align: center;
+      user-select: none;
+      text-shadow: 0 5px 22px #e6e7ff29;
+    }
+    .sub-title {
+      font-size: 1.13rem;
+      font-weight: 700;
+      color: #635da5;
+      letter-spacing: .035em;
+      margin-bottom: 20px;
+      margin-top: 0px;
+      text-align: center;
+      text-shadow: 0 1.2px 6px #bdbaf233;
+    }
+    .btn-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      gap: 19px;
+      margin-top: 2px;
+    }
+    .select-btn {
+      display: block;
+      width: 100%;
+      padding: 13px 0;
+      font-size: 1rem;
+      font-weight: 900;
+      border: none;
+      border-radius: 13px;
+      background: linear-gradient(90deg, #7264b6 10%, #a3b1e8 90%);
+      color: #fff;
+      box-shadow: 0 2px 10px #8c88ee29;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      letter-spacing: 0.04em;
+      transition:
+          background .18s,
+          box-shadow .17s,
+          transform .11s;
+    }
+    .select-btn:hover, .select-btn:focus {
+      background: linear-gradient(90deg,#a3b1e8 10%, #7264b6 90%);
+      box-shadow: 0 6px 18px #7264b649;
+      transform: scale(1.03);
+      outline: none;
+    }
+    @media (max-width:520px){
+      .container{padding:13px 2vw;}
+      .mit-title{font-size:1.13rem;}
+      .sub-title{font-size:.98rem;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="mit-title">MIT MYSORE</div>
+    <div class="sub-title">CIE Credit Calculator</div>
+    <div class="btn-container">
+      <a href="/calci/4credits/" class="select-btn">4 Credit Calculator</a>
+      <a href="/calci/3-2credits/" class="select-btn">3, 2 & 1 Credit Calculator</a>
+    </div>
+  </div>
+</body>
+</html>

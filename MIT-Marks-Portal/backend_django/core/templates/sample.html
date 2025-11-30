@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Class – Teacher</title>
+    <link rel="stylesheet" href="css/new_theme.css">
+</head>
+
+<body>
+
+<div class="topbar">
+    <div class="brand">Teacher Dashboard</div>
+    <button class="logout" onclick="logout()">Logout</button>
+</div>
+
+<div class="wrapper">
+    <div class="card">
+        <h2>Select Class Details</h2>
+
+        <label>Branch</label>
+        <select id="branch">
+            <option value="">Select Branch</option>
+            <option value="CSE">CSE</option>
+            <option value="ISE">ISE</option>
+            <option value="ECE">ECE</option>
+            <option value="MECH">Mechanical</option>
+            <option value="CIVIL">Civil</option>
+        </select>
+
+        <label>Semester</label>
+        <select id="semester">
+            <option value="">Select Semester</option>
+            <option value="1">1st Sem</option>
+            <option value="2">2nd Sem</option>
+            <option value="3">3rd Sem</option>
+            <option value="4">4th Sem</option>
+            <option value="5">5th Sem</option>
+            <option value="6">6th Sem</option>
+            <option value="7">7th Sem</option>
+            <option value="8">8th Sem</option>
+        </select>
+
+        <label>Section</label>
+        <select id="section">
+            <option value="">Select Section</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+        </select>
+
+        <label>Course Credits</label>
+        <select id="credits">
+            <option value="">Select Credits</option>
+            <option value="1">1 Credit</option>
+            <option value="2">2 Credits</option>
+            <option value="3">3 Credits</option>
+            <option value="4">4 Credits (Separate Template)</option>
+        </select>
+
+        <button class="btn btn-primary" onclick="continueNext()">Continue</button>
+    </div>
+</div>
+
+<script>
+function continueNext() {
+    let branch = document.getElementById("branch").value;
+    let sem = document.getElementById("semester").value;
+    let sec = document.getElementById("section").value;
+    let credits = document.getElementById("credits").value;
+
+    if (!branch || !sem || !sec || !credits) {
+        alert("Please fill all fields.");
+        return;
+    }
+
+    localStorage.setItem("branch", branch);
+    localStorage.setItem("semester", sem);
+    localStorage.setItem("section", sec);
+    localStorage.setItem("credits", credits);
+
+    window.location.href = "student_list_manage.html";
+}
+
+function logout() {
+    window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>

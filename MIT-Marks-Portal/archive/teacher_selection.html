@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Teacher Portal — Select Class</title>
+  <link rel="stylesheet" href="css/styles.css">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 30px;
+    }
+    .container {
+      max-width: 420px;
+      margin: auto;
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 12px;
+      font-size: 16px;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+      margin-top: 20px;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Select Branch, Semester & Section</h2>
+
+  <select id="branch">
+    <option value="">Select Branch</option>
+    <option>CSE</option>
+    <option>ISE</option>
+    <option>ECE</option>
+    <option>ME</option>
+  </select>
+
+  <select id="sem">
+    <option value="">Select Semester</option>
+    <option>1</option>
+    <option>2</option>
+    <option>3</option>
+    <option>4</option>
+    <option>5</option>
+    <option>6</option>
+    <option>7</option>
+    <option>8</option>
+  </select>
+
+  <select id="section">
+    <option value="">Select Section</option>
+    <option>A</option>
+    <option>B</option>
+    <option>C</option>
+  </select>
+
+  <button id="submitBtn">Continue</button>
+</div>
+
+
+<script>
+document.getElementById("submitBtn").onclick = async () => {
+    const branch = document.getElementById("branch").value;
+    const sem = document.getElementById("sem").value;
+    const section = document.getElementById("section").value;
+
+    if (!branch || !sem || !section) {
+        alert("Please select all fields");
+        return;
+    }
+
+    const res = await fetch("http://localhost:3000/check-students", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ branch, sem, section })
+    });
+
+    const data = await res.json();
+
+    // Redirect according to existing student list
+    if (data.exists) {
+        // Student list exists → go to marks upload/download page
+        window.location.href = `teacher_marks.html?branch=${branch}&sem=${sem}&section=${section}`;
+    } else {
+        // Student list missing → go to student list upload page
+        window.location.href = `teacher_student_list.html?branch=${branch}&sem=${sem}&section=${section}`;
+    }
+};
+</script>
+
+</body>
+</html>

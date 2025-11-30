@@ -1,0 +1,47 @@
+{% load static %}
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Create Subject</title></head>
+<body>
+  <h2>Create subject for class</h2>
+  <label>Subject name</label><input id="subject" />
+  <label>Subject code</label><input id="subcode" />
+  <label>Faculty</label><input id="faculty" />
+  <label>Credits</label>
+  <select id="credits"><option>4</option><option selected>3</option><option>2</option><option>1</option></select>
+  <button onclick="createAndDownload()">Create & Download Template</button>
+
+<script>
+function createAndDownload(){
+  const branch = localStorage.getItem("branch");
+  const semester = localStorage.getItem("semester");
+  const section = localStorage.getItem("section");
+  const subject = document.getElementById("subject").value.trim();
+  const subcode = document.getElementById("subcode").value.trim();
+  const faculty = document.getElementById("faculty").value.trim();
+  const credits = parseInt(document.getElementById("credits").value);
+
+  if(!branch || !semester || !section){ alert("Select class first"); return; }
+  if(!subject || !subcode){ alert("enter subject and subcode"); return; }
+
+  fetch("/api/create_subject/", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({branch, semester, section, subject, subcode, faculty, credits})
+  }).then(r=>r.json()).then(j=>{
+    if(j.status === "success"){
+      const sid = j.subject_id;
+      // download template
+      const url = `/api/download_subject_template/?branch=${branch}&semester=${semester}&section=${section}&subject_id=${sid}`;
+      window.location.href = url;
+      // optionally open marks upload page
+      setTimeout(()=>{ window.location.href = "/teacher/marks/"; }, 1200);
+      localStorage.setItem("current_subject_id", sid);
+    } else {
+      alert("error creating subject");
+    }
+  });
+}
+</script>
+</body>
+</html>

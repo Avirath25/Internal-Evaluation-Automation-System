@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Teacher Dashboard — MIT MYSORE</title>
+
+<link rel="stylesheet" href="css/styles.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <div class="brand">MIT MYSORE · TEACHER</div>
+    <button class="logout" onclick="location.href='index.html'">Logout</button>
+</div>
+
+<div class="wrapper">
+
+<!-- CARD A — MANAGE STUDENTS -->
+<div class="card">
+    <h2>Manage Students</h2>
+
+    <button class="btn btn-primary" onclick="location.href='bulk_students.html'">
+        📁 Bulk Upload Students
+    </button>
+</div>
+
+
+<!-- CARD B — CLASS & SUBJECT SETUP -->
+<div class="card">
+    <h2>Class & Subject Setup</h2>
+
+    <div class="grid">
+        <div>
+            <label>Teacher Name</label>
+            <input id="teacherName" value="Prof. Avirath Gowda">
+        </div>
+
+        <div>
+            <label>Semester</label>
+            <select id="semester"><option value="">Select</option></select>
+        </div>
+
+        <div>
+            <label>Branch</label>
+            <select id="branch"><option value="">Select</option></select>
+        </div>
+
+        <div>
+            <label>Section</label>
+            <select id="section"><option value="">Select</option></select>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div style="grid-column: span 2;">
+            <label>Choose Subject</label>
+            <select id="subjectSelect">
+                <option value="">— Select subject —</option>
+            </select>
+        </div>
+
+        <div>
+            <label>Subject Code</label>
+            <input id="subjectCode" readonly>
+        </div>
+
+        <div>
+            <label>Credits</label>
+            <input id="subjectCredits" readonly>
+        </div>
+    </div>
+
+    <div style="margin-top:10px; display:flex; gap:12px;">
+        <button id="clearSelection" class="btn btn-light">Clear</button>
+        <button id="downloadTemplate" class="btn btn-primary">⬇ Download Template</button>
+    </div>
+</div>
+
+
+<!-- CARD C — ADD NEW SUBJECT -->
+<div class="card">
+    <h2>Add New Subject</h2>
+
+    <div class="grid">
+        <div style="grid-column: span 2;">
+            <label>Subject Name</label>
+            <input id="newSubName">
+        </div>
+
+        <div>
+            <label>Subject Code</label>
+            <input id="newSubCode">
+        </div>
+
+        <div>
+            <label>Credits</label>
+            <select id="newSubCredits">
+                <option value="">Select</option>
+                <option>4</option><option>3</option><option>2</option><option>1</option>
+            </select>
+        </div>
+    </div>
+
+    <button id="addSubject" class="btn btn-primary" style="margin-top:10px;">
+        + Add Subject
+    </button>
+
+    <p id="addSubMsg" style="font-weight:700;margin-top:6px;"></p>
+</div>
+
+
+<!-- CARD D — UPLOAD MARKS -->
+<div class="card">
+    <h2>Upload Marks</h2>
+
+    <div style="display:flex; gap:12px; align-items:center;">
+        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="flex:1;">
+        <button id="confirmUpload" class="btn btn-primary" disabled>Confirm Upload</button>
+    </div>
+
+    <div id="previewWrap" class="table-container" style="display:none; margin-top:12px;">
+        <table id="previewTable"></table>
+    </div>
+</div>
+
+</div>
+
+<!-- MAIN JS -->
+<script>
+const el = id => document.getElementById(id);
+
+/* AUTO LOAD DROPDOWNS */
+async function loadSemesters() {
+    const res = await fetch("/api/semesters");
+    const data = await res.json();
+    semester.innerHTML = "<option value=''>Select</option>";
+    data.forEach(s => {
+        semester.innerHTML += `<option>${s.number}</option>`;
+    });
+}
+
+async function loadBranches() {
+    const res = await fetch("/api/branches");
+    const data = await res.json();
+    branch.innerHTML = "<option value=''>Select</option>";
+    data.forEach(b => {
+        branch.innerHTML += `<option>${b.name}</option>`;
+    });
+}
+
+async function loadSections() {
+    section.innerHTML = "<option value=''>Select</option>";
+    if (!semester.value || !branch.value) return;
+    const res = await fetch(`/api/sections?sem=${semester.value}&branch=${branch.value}`);
+    const data = await res.json();
+    data.forEach(s => {
+        section.innerHTML += `<option>${s.name}</option>`;
+    });
+}
+
+/* LOAD SUBJECTS FROM DB */
+async function loadSubjects() {
+    subjectSelect.innerHTML = "<option value=''>— Select subject —</option>";
+    subjectCode.value = "";
+    subjectCredits.value = "";
+
+    if (!semester.value || !branch.value) return;
+
+    const res = await fetch(`/api/subjects?sem=${semester.value}&branch=${branch.value}`);
+    const subs = await res.json();
+
+    subs.forEach(s => {
+        subjectSelect.innerHTML += `
+            <option value="${s.id}" data-code="${s.code}" data-credits="${s.credits}">
+                ${s.name} (${s.code})
+            </option>`;
+    });
+}
+
+/* When subject changes */
+subjectSelect.onchange = () => {
+    const opt = subjectSelect.selectedOptions[0];
+    if (!opt) return;
+    subjectCode.value = opt.dataset.code;
+    subjectCredits.value = opt.dataset.credits;
+};
+
+/* Clear selection */
+clearSelection.onclick = () => {
+    subjectSelect.value = "";
+    subjectCode.value = "";
+    subjectCredits.value = "";
+};
+
+/* ADD NEW SUBJECT */
+addSubject.onclick = async () => {
+    const name = newSubName.value.trim();
+    const code = newSubCode.value.trim();
+    const credits = newSubCredits.value.trim();
+
+    if (!name || !code || !credits || !semester.value || !branch.value) {
+        addSubMsg.style.color = "red";
+        addSubMsg.textContent = "Fill all fields + select sem & branch.";
+        return;
+    }
+
+    const res = await fetch("/api/subjects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            name, code, credits,
+            sem: semester.value,
+            branch: branch.value
+        })
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+        addSubMsg.style.color = "red";
+        addSubMsg.textContent = data.error;
+    } else {
+        addSubMsg.style.color = "green";
+        addSubMsg.textContent = "Subject added!";
+        newSubName.value = "";
+        newSubCode.value = "";
+        newSubCredits.value = "";
+        loadSubjects();
+    }
+};
+
+/* DOWNLOAD TEMPLATE */
+downloadTemplate.onclick = async () => {
+    if (!semester.value || !branch.value || !section.value || !subjectSelect.value) {
+        alert("Select class + subject first!");
+        return;
+    }
+
+    const res = await fetch(`/api/students?sem=${semester.value}&branch=${branch.value}&section=${section.value}`);
+    const students = await res.json();
+
+    if (!students.length) {
+        alert("No students found. Upload student list first!");
+        return;
+    }
+
+    const credits = Number(subjectCredits.value);
+    const cols = credits === 4
+        ? ["SlNo","USN","Name","IA1","IA2","IA3","Best2Avg","Assignment","Attendance","Total","Remarks"]
+        : ["SlNo","USN","Name","Eval1","Eval2","Assignment","Attendance","Total","Remarks"];
+
+    const meta = [
+        ["Teacher", teacherName.value],
+        ["Semester", semester.value],
+        ["Branch", branch.value],
+        ["Section", section.value],
+        ["Subject", subjectSelect.options[subjectSelect.selectedIndex].text],
+        ["Code", subjectCode.value],
+        ["Credits", subjectCredits.value],
+        []
+    ];
+
+    const rows = students.map((s, i) => ({
+        SlNo: i+1,
+        USN: s.usn,
+        Name: s.name
+    }));
+
+    const sheet = XLSX.utils.aoa_to_sheet(meta);
+    XLSX.utils.sheet_add_json(sheet, rows, { origin: meta.length });
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, sheet, "Template");
+
+    XLSX.writeFile(wb, "MarksTemplate.xlsx");
+};
+
+/* UPLOAD MARKS */
+let parsed = [];
+
+fileInput.onchange = e => {
+    const f = e.target.files[0];
+    if (!f) return;
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const wb = XLSX.read(new Uint8Array(ev.target.result), { type: "array" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        parsed = XLSX.utils.sheet_to_json(ws, { defval: "" });
+
+        renderPreview(parsed);
+        confirmUpload.disabled = parsed.length === 0;
+    };
+    reader.readAsArrayBuffer(f);
+};
+
+function renderPreview(rows) {
+    previewWrap.style.display = "block";
+    previewTable.innerHTML = "";
+
+    const headers = Object.keys(rows[0]);
+    let html = "<thead><tr>";
+    headers.forEach(h => html += `<th>${h}</th>`);
+    html += "</tr></thead><tbody>";
+
+    rows.forEach(r => {
+        html += "<tr>";
+        headers.forEach(h => html += `<td>${r[h]}</td>`);
+        html += "</tr>";
+    });
+
+    html += "</tbody>";
+    previewTable.innerHTML = html;
+}
+
+confirmUpload.onclick = async () => {
+    const res = await fetch("/upload-marks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rows: parsed })
+    });
+
+    const data = await res.json();
+    alert("Uploaded successfully!");
+};
+
+/* INIT */
+loadSemesters();
+loadBranches();
+semester.onchange = loadSections;
+branch.onchange = loadSections;
+semester.onchange = loadSubjects;
+branch.onchange = loadSubjects;
+
+</script>
+</body>
+</html>

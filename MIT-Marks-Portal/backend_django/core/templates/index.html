@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Login – Summary Sheet Printer</title>
+
+<!-- CSS -->
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="login-box">
+  <div class="header">
+    <div class="header-icon">
+      <i class="fas fa-graduation-cap"></i>
+    </div>
+    <h1>MIT MYSORE</h1>
+    <p>Internal Evaluation Automation System</p>
+  </div>
+  
+  <div class="form-content">
+  <div class="title-small">Teachers Login</div>
+
+  <div id="error" class="error"></div>
+
+  <!-- TEACHER FORM -->
+  <form id="teacherForm">
+
+    <label>Email</label>
+    <input type="email" id="teaEmail" placeholder="Enter your email" required>
+
+    <label>Password</label>
+    <div class="password-wrapper">
+      <input type="password" id="teaPwd" placeholder="Enter Password" required>
+      <span class="eye-icon" onclick="toggleTeacherPassword()" id="teaEye"></span>
+    </div>
+
+    <div class="remember-row">
+      <input type="checkbox" id="rememberMe">
+      <span>Remember me</span>
+    </div>
+
+    <button class="btn-primary" onclick="return loginTeacher()">Login as Teacher</button>
+  </form>
+  </div>
+
+</div>
+
+
+<script>
+// ---------------- LOAD REMEMBERED LOGIN ----------------
+window.onload = function () {
+  const savedTea = localStorage.getItem("teacherEmail");
+  if (savedTea) {
+    document.getElementById("teaEmail").value = savedTea;
+    document.getElementById("rememberMe").checked = true;
+  }
+};
+
+// ---------------- PASSWORD VISIBILITY (TEACHER) ----------------
+function toggleTeacherPassword() {
+  let pwd = document.getElementById("teaPwd");
+  let eye = document.getElementById("teaEye");
+
+  if (pwd.type === "password") {
+    pwd.type = "text";
+    eye.classList.add("active");
+  } else {
+    pwd.type = "password";
+    eye.classList.remove("active");
+  }
+}
+
+// ---------------- TEACHER LOGIN ----------------
+function loginTeacher() {
+
+  const email = document.getElementById("teaEmail").value;
+  const pwd = document.getElementById("teaPwd").value;
+
+  const emailPattern = /\S+@\S+\.\S+/;
+
+  if (!emailPattern.test(email)) {
+    document.getElementById("error").innerText = "Enter a valid email.";
+    return false;
+  }
+
+  if (pwd !== "teacher@mit") {
+    document.getElementById("error").innerText = "Invalid teacher password.";
+    return false;
+  }
+
+  // Save email
+  if (document.getElementById("rememberMe").checked) {
+    localStorage.setItem("teacherEmail", email);
+  } else {
+    localStorage.removeItem("teacherEmail");
+  }
+
+  location.href = "/teacher/home/";
+  return false;
+}
+</script>
+
+</body>
+</html>

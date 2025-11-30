@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Summary Sheet</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f5f7fa;
+      padding: 30px;
+    }
+    .container {
+      max-width: 480px;
+      margin: auto;
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 16px;
+      border-radius: 6px;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background: #e5e7eb;
+    }
+  </style>
+
+</head>
+<body>
+
+<div class="container">
+  <h2>View Your Summary Sheet</h2>
+
+  <input type="text" id="usn" placeholder="Enter your USN">
+  <button id="viewBtn">View Summary</button>
+
+  <div id="summaryBox" style="display:none;">
+    <h3>Summary Sheet</h3>
+
+    <p><b>Name:</b> <span id="studentName"></span></p>
+    <p><b>USN:</b> <span id="studentUSN"></span></p>
+
+    <table>
+      <tr>
+        <th>Test 1</th>
+        <th>Test 2</th>
+        <th>Test 3</th>
+        <th>Assignment</th>
+        <th>Internal</th>
+        <th>Total</th>
+        <th>Grade</th>
+      </tr>
+      <tr>
+        <td id="t1"></td>
+        <td id="t2"></td>
+        <td id="t3"></td>
+        <td id="ass"></td>
+        <td id="internal"></td>
+        <td id="total"></td>
+        <td id="grade"></td>
+      </tr>
+    </table>
+
+    <button id="downloadBtn">Download Summary Sheet (Excel)</button>
+  </div>
+</div>
+
+
+<script>
+document.getElementById("viewBtn").onclick = async () => {
+  const usn = document.getElementById("usn").value.trim();
+  if (!usn) return alert("Please enter your USN");
+
+  const res = await fetch("http://localhost:3000/student-summary?usn=" + usn);
+  const data = await res.json();
+
+  if (data.error) return alert("USN not found");
+
+  // Fill fields
+  document.getElementById("studentName").innerText = data.name;
+  document.getElementById("studentUSN").innerText = data.usn;
+
+  document.getElementById("t1").innerText = data.test1;
+  document.getElementById("t2").innerText = data.test2;
+  document.getElementById("t3").innerText = data.test3;
+  document.getElementById("ass").innerText = data.assignment;
+  document.getElementById("internal").innerText = data.internal;
+  document.getElementById("total").innerText = data.total;
+  document.getElementById("grade").innerText = data.grade;
+
+  document.getElementById("summaryBox").style.display = "block";
+
+  document.getElementById("downloadBtn").onclick = () => {
+    window.location.href = "http://localhost:3000/download-student-summary?usn=" + usn;
+  };
+};
+</script>
+
+</body>
+</html>
