@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: internal-evaluation-automation-system
+    runtime: python
+    buildCommand: "cd backend_django && chmod +x build.sh && ./build.sh"
+    startCommand: "cd backend_django && gunicorn backend_django.wsgi:application"
+    envVars:
+      - key: DEBUG
+        value: False
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SECRET_KEY
+        generateValue: true
